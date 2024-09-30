@@ -1,0 +1,8 @@
+{
+  "label": "Integrating via a Connector",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "You can integrate with MMI Staking by implementing and hosting a REST API (the \"Connector\") that satisfies a specific interface, and then registering it against MMI Staking."
+  }
+}

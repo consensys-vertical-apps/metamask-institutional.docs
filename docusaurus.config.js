@@ -1,4 +1,4 @@
-const {themes} = require("prism-react-renderer");
+const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
@@ -7,22 +7,19 @@ const baseUrl = isDev ? "/" : "/";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Consensys docs guide",
-  tagline:
-    "A template documentation site repository and contribution guidelines.",
-  url: "https://docs-template.consensys.io",
+  title: "MetaMask Institutional documentation",
+  //   tagline: "Something catchy",
+  url: "https://docs.metamask-institutional.io",
   baseUrl,
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "throw",
   favicon: "img/favicon.ico",
   trailingSlash: false,
-
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "Consensys", // Usually your GitHub org/user name.
-  projectName: "docs-template", // Usually your repo name.
+  projectName: "metamask-institutional.docs", // Usually your repo name.
   deploymentBranch: "gh-pages", // Github Pages deploying branch
-
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -115,26 +112,39 @@ const config = {
       docs: {
         sidebar: {
           hideable: true,
+          autoCollapseCategories: true,
         },
       },
       navbar: {
-        title: "Consensys docs guide",
+        title: "",
         logo: {
-          alt: "Consensys logo",
-          src: "img/logo.svg",
+          alt: "MetaMask Institutional logo",
+          src: "img/logo_dark.svg",
           srcDark: "img/logo_dark.svg",
-          width: 32,
-          height: 32,
         },
         items: [
           {
-            href: "https://github.com/Consensys/docs-template",
+            type: "docSidebar",
+            sidebarId: "stakingSidebar",
+            docId: "staking/introduction",
+            position: "left",
+            label: "Staking",
+          },
+          {
+            type: "doc",
+            // sidebarId: "stakingSidebar",
+            docId: "api/index",
+            position: "left",
+            label: "API",
+          },
+          {
+            href: "https://github.com/consensys-vertical-apps/metamask-institutional",
             className: "header-github-link",
             position: "right",
           },
           {
-            href: "https://discord.com/invite/consensys",
-            className: "header-discord-link",
+            href: "https://twitter.com/MMInstitutional",
+            className: "header-twitter-link",
             position: "right",
           },
         ],
@@ -143,44 +153,19 @@ const config = {
         style: "dark",
         links: [
           {
-            title: "Consensys developer docs",
+            title: "MetaMask Institutional",
             items: [
               {
-                label: "Overview",
+                label: "Website",
+                href: "https://metamask.io/institutions/",
+              },
+              {
+                label: "Portfolio Dashboard",
+                href: "https://metamask-institutional.io/",
+              },
+              {
+                label: "Documentation",
                 to: "/",
-              },
-              {
-                label: "Contribute to the docs",
-                to: "/contribute",
-              },
-              {
-                label: "Create a new doc site",
-                to: "/create",
-              },
-              {
-                label: "Configure advanced features",
-                to: "/configure",
-              },
-            ],
-          },
-          {
-            title: "Consensys doc sites",
-            items: [
-              {
-                label: "Teku",
-                href: "https://docs.teku.consensys.net/",
-              },
-              {
-                label: "MetaMask",
-                href: "https://docs.metamask.io/",
-              },
-              {
-                label: "Infura",
-                href: "https://docs.infura.io/",
-              },
-              {
-                label: "See full list",
-                to: "/#list-of-documentation-sites",
               },
             ],
           },
@@ -188,20 +173,38 @@ const config = {
             title: "Community",
             items: [
               {
-                label: "Consensys documentation GitHub",
-                href: "https://github.com/Consensys/docs-template",
+                label: "Twitter",
+                href: "https://twitter.com/MMInstitutional",
               },
               {
-                label: "Consensys Discord",
-                href: "https://discord.com/invite/consensys",
+                label: "LinkedIn",
+                href: "https://www.linkedin.com/company/metamask-institutional/posts",
+              },
+            ],
+          },
+          {
+            title: "Contact us",
+            items: [
+              {
+                label: "Contact support",
+                href: "https://support.metamask-institutional.io/",
               },
               {
-                label: "Consensys Twitter",
-                href: "https://twitter.com/consensys",
+                label: "Provide feedback",
+                href: "https://consensys-software.typeform.com/to/afkfqzzZ?typeform-source=metamask-institutional.io",
+              },
+            ],
+          },
+          {
+            title: "Legal",
+            items: [
+              {
+                label: "Privacy policy",
+                href: "https://consensys.net/privacy-policy/",
               },
               {
-                label: "Consensys home",
-                href: "https://consensys.net/",
+                label: "Terms and Conditions",
+                href: "https://metamask-institutional.io/terms-and-conditions",
               },
             ],
           },
