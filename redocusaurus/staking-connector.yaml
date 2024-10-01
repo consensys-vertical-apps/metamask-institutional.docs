@@ -1,0 +1,563 @@
+openapi: 3.0.0
+info:
+  description: >-
+    **MMI Staking** is a web service that "talks" with staking providers through
+    a specific and common REST API, defined by MMI. In order for it to talk with
+    your existing API, you need to implement and host a **Connector**: a REST
+    web service that sits between **MMI Staking** and your existing API, and
+    that stands as an adaptation layer. The Connector must support this OpenAPI
+    specification.
+  termsOfService: ''
+  title: MMI Staking - Connector
+  version: 0.0.1
+  contact:
+    email: mmi@consensys.net
+servers:
+  - url: http://localhost:3003/v1/
+paths:
+  /stake:
+    post:
+      summary: Initiate a Stake
+      description: >-
+        Inititate a stake by idempotently reserving a `validator` for the
+        specific client. Requires an idempotent key.
+
+
+        It takes the supplied "type 1" `withdrawal_pubkey` ETH1 address,  the
+        `amount` which **must** be equal to 32,000,000,000 `Gwei` (32 `ETH`) and
+        a `fee_recipient` ETH1 address.
+
+
+        It returns the deposit payload for the user to send.
+      operationId: simpleStake
+      tags:
+        - Stakes
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          description: the unique idempotency key for this request
+          example: f1c971b4-7114-4c4b-8ad2-a6f9e33e2cd0
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/SimpleStakeRequest'
+      responses:
+        '200':
+          description: Deposit payloads with additional information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleStakeResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                MissingIdempotencyKey:
+                  $ref: '#/components/examples/MissingIdempotencyKey'
+                InvalidWithdrawalPublicKey:
+                  $ref: '#/components/examples/InvalidWithdrawalPublicKey'
+                InvalidDepositAmount:
+                  $ref: '#/components/examples/InvalidDepositAmount'
+                TooManyInTransitValidators:
+                  $ref: '#/components/examples/TooManyInTransitValidators'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /details:
+    get:
+      tags:
+        - Details
+      summary: Get Details
+      operationId: getDetails
+      description: Generic information about your system.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Details'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /voluntary-exit-message/:valPubKey:
+    get:
+      tags:
+        - Withdrawals
+      summary: Request a signed voluntary exit message
+      operationId: requestSignedVem
+      description: >-
+        Returns a [signed voluntary exit
+        message](https://benjaminion.xyz/eth2-annotated-spec/phase0/beacon-chain/#signedvoluntaryexit),
+        but **does not** initiate the actual exit.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoluntaryExitMessage'
+        '400':
+          $ref: '#/components/responses/InvalidPubKeyError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/ValidatorNotFoundError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /exit-validator/:valPubKey:
+    post:
+      tags:
+        - Withdrawals
+      summary: Exit a validator
+      operationId: exitValidator
+      description: >-
+        Exit a validator immediately by signing the exit transaction and
+        broadcasting it to the Beacon chain. </br> </br> **Note:** You can
+        optionally support exits via a transaction made from the withdrawal
+        address into a given smart contract. In that case, make this endpoint
+        return a `501 Not Implemented` error.
+      responses:
+        '201':
+          description: Created
+        '400':
+          $ref: '#/components/responses/InvalidPubKeyError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/ValidatorNotFoundError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+        '501':
+          $ref: '#/components/responses/NotImplementedError'
+components:
+  parameters:
+    offsetParam:
+      in: query
+      name: offset
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: The number of items to skip before starting to collect the result set.
+    limitParam:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 100
+      description: The numbers of items to return.
+  callbacks: {}
+  links: {}
+  requestBodies:
+    SimpleStakeRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SimpleDeposit'
+      required: true
+      description: >-
+        Withdrawal Public Key, the pledged Amount of 32,000,000,000 Gwei (32
+        ETH).
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedError:
+      description: |-
+        One of these happened:
+          - `Authorization` header with bearer token is missing
+          - Bearer token is invalid / expired
+          - `X-API-Key` header with API Key is missing
+          - API Key is invalid / expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: Unauthorized
+    ForbiddenError:
+      description: Caller doesn't have the required permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: >-
+              `TODO TBC` api error: code 403: forbidden: missing permission:
+              read:validator
+    UnexpectedError:
+      description: Unexpected error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: An unknown error happened
+    NotImplementedError:
+      description: Not Implemented error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 501
+            message: Not implemented
+    InvalidPubKeyError:
+      description: Invalid validator public key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: valPubKey must match /^0x[a-fA-F0-9]{96}$/ regular expression
+    ValidatorNotFoundError:
+      description: No validator with passed public key found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 404
+            message: No validator with passed public key found.
+  examples:
+    ValidatorIDBLSPublicKey:
+      summary: Validator BlS Public Key
+      value: 2.5552491662185297e+115
+    ValidatorIDIndex:
+      summary: Validator Index
+      value: 42
+    MissingIdempotencyKey:
+      summary: Idempotency-Key header is missing
+      value:
+        code: 400
+        message: 'api error: code 400: bad request: missing idempotency-key header'
+    ValidatorNotFound:
+      summary: Validator Not Found
+      value:
+        code: 404
+        message: 'api error: code 404: not found: validator is not found'
+    InvalidWithdrawalPublicKey:
+      summary: Withdrawal Public Key has invalid format
+      value:
+        code: 400
+        message: >-
+          api error: code 400: bad request: cannot parse public key: unknown key
+          type: Eth1 address expected (like
+          0x3d93A6db30D26aD3D7Fc98dF0fa552CE7725E972). BLS public keys not
+          supported.
+    InvalidDepositAmount:
+      summary: Deposit amount has invalid value
+      value:
+        code: 400
+        message: >-
+          api error: code 400: bad request: invalid stake deposit amount:
+          expected: 32000000000, got: 320000000010
+    ValidatorIsNotActive:
+      summary: Validator is not active
+      value:
+        code: 400
+        message: >-
+          api error: code 400: bad request: cannot initiate validator voluntary
+          exit: validator is not active
+    TooManyInTransitValidators:
+      summary: Too many in transit validators
+      value:
+        code: 400
+        message: 'api error: code 400: bad request: too many in transit validators'
+  schemas:
+    Gwei:
+      type: string
+      pattern: ^[0-9]+$
+      example: '32000000000'
+    DepositData:
+      type: object
+      properties:
+        pubkey:
+          $ref: '#/components/schemas/PublicKey'
+        withdrawal_credentials:
+          $ref: '#/components/schemas/Root'
+        amount:
+          $ref: '#/components/schemas/Gwei'
+        signature:
+          $ref: '#/components/schemas/Signature'
+        deposit_root:
+          $ref: '#/components/schemas/Root'
+        deposit_message_root:
+          $ref: '#/components/schemas/Root'
+        hex:
+          type: string
+          description: >-
+            The deposit transaction's input data, ABI-encoded with the official
+            [Eth2.0 Deposit
+            Contract](https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa#code).
+            For instance, [this
+            transaction](https://etherscan.io/tx/0x68a9e5f917155c70a74578bef38f4d11559c6f3b6ba98f29cb7933421ff1b3a6)'s
+            input data.  
+
+
+            Should look like this:
+
+            ```json
+              {
+                ...
+                "stake": {
+                  ...
+                  "hex": "0x22895118....02e257dce8"
+                }
+            ```
+          pattern: ^0x[a-fA-F0-9]{2,}$
+      required:
+        - pubkey
+        - withdrawal_credentials
+        - amount
+        - signature
+        - deposit_root
+        - deposit_message_root
+        - hex
+    SimpleDeposit:
+      type: object
+      description: The stake object represents the deposit pledge.
+      properties:
+        withdrawal_pubkey:
+          $ref: '#/components/schemas/WithdrawalPublickey'
+        amount:
+          $ref: '#/components/schemas/Gwei'
+        fee_recipient:
+          $ref: '#/components/schemas/Eth1Address'
+      required:
+        - withdrawal_pubkey
+        - amount
+        - fee_recipient
+    Signature:
+      example: >-
+        0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505
+      pattern: ^0x[a-fA-F0-9]{192}$
+      type: string
+    ChainDepositConfiguration:
+      type: object
+      description: Ethereum 1 chain configuration to send deposit.
+      properties:
+        eth1_contract_address:
+          $ref: '#/components/schemas/Eth1Address'
+        chain_id:
+          type: string
+          example: '18446744073709551615'
+          description: Chain ID of the ethereum network to send deposit.
+        network_id:
+          type: string
+          example: '18446744073709551615'
+          description: Network ID of the ethereum network to send deposit.
+      required:
+        - eth1_contract_address
+        - chain_id
+        - network_id
+    SimpleStakeResponse:
+      type: object
+      properties:
+        chain_deposit_configuration:
+          $ref: '#/components/schemas/ChainDepositConfiguration'
+        stake:
+          $ref: '#/components/schemas/DepositData'
+        fee_recipient:
+          $ref: '#/components/schemas/Eth1Address'
+      required:
+        - chain_deposit_configuration
+        - stake
+        - fee_recipient
+    Root:
+      pattern: ^0x[a-fA-F0-9]{64}$
+      type: string
+    PublicKey:
+      type: string
+      description: >-
+        Unique validator BLS public key: 48-bytes, hex-encoded, optional 0x
+        prefix, case insensitive. Alternatively, 20-bytes with same spec.
+      example: >-
+        0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a
+      pattern: ^(0x[a-fA-F0-9]{96})|(0x[a-fA-F0-9]{40})$
+    Eth1Address:
+      type: string
+      description: >-
+        An Ethereum 1 address, uniquely identifying them. 20-bytes, hex encoded
+        with 0x prefix, case insensitive.
+      example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc'
+      pattern: ^0x[a-fA-F0-9]{40}$
+    WithdrawalPublickey:
+      type: string
+      description: >-
+        An Ethereum 1 address. MetaMask Institutional enforces "type 1"
+        withdrawal credentials (based upon an Ethereum execution address), and
+        prevents "type 0" withdrawal credentials (based upon a BLS private key).
+        20-bytes, hex encoded with 0x prefix, case insensitive.
+      example: '0x93247f2209abcacf57b75a51dafae777f9dd38bc'
+      pattern: ^0x[a-fA-F0-9]{40}$
+    SignedVoluntaryExit:
+      type: object
+      description: >-
+        The
+        [`SignedVoluntaryExit`](https://github.com/ethereum/consensus-specs/blob/master/specs/phase0/beacon-chain.md#signedvoluntaryexit)
+        object from the Eth2.0 spec.
+      properties:
+        message:
+          $ref: '#/components/schemas/VoluntaryExit'
+        signature:
+          $ref: '#/components/schemas/Signature'
+      required:
+        - message
+        - signature
+    VoluntaryExitMessage:
+      type: object
+      properties:
+        exit_transaction:
+          $ref: '#/components/schemas/SignedVoluntaryExit'
+        fork_version:
+          $ref: '#/components/schemas/ForkVersion'
+      required:
+        - exit_transaction
+        - fork_version
+    UUID:
+      type: string
+      description: Unique identifier.
+      example: deadbeef-cafe-1337-2021-339ab8909701
+      pattern: >-
+        ^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$
+    ForkVersion:
+      type: string
+      description: >-
+        The [**Fork
+        Version**](https://github.com/ethereum/consensus-specs/blob/master/specs/phase0/beacon-chain.md#custom-types)
+        used to sign the voluntary exit message.
+      example: '0x00000000'
+      pattern: ^0x[a-fA-F0-9]{8}$
+    VoluntaryExit:
+      type: object
+      description: >-
+        The
+        [`VoluntaryExit`](https://github.com/ethereum/eth2.0-specs/blob/v0.11.1/specs/phase0/beacon-chain.md#voluntaryexit)
+        object from the Eth2.0 spec.
+      properties:
+        epoch:
+          type: string
+          example: '18446744073709551615'
+          description: Minimum epoch for processing exit.
+        validator_index:
+          type: string
+          example: '18446744073709551615'
+          description: Index of the exiting validator.
+      required:
+        - epoch
+        - validator_index
+    Error:
+      type: object
+      properties:
+        code:
+          description: Error code.
+          type: integer
+        message:
+          description: Error message.
+          type: string
+      required:
+        - code
+        - message
+    Details:
+      type: object
+      properties:
+        feeTiers:
+          type: array
+          items:
+            type: number
+            minimum: 0
+            maximum: 100
+          minItems: 5
+          maxItems: 5
+          description: >-
+            The tiers of operator fee rate (%), charged based on a percentage of
+            staking rewards. The rewards of each validator a MMI user has with
+            you get taxed depending on their **total staking position with
+            you**: <ul>
+              <li>Tier `1`: Less than `5000 ETH`</li>
+              <li>Tier `2`: Greater than or equal to `5000 ETH` and less than `15000 ETH`</li>
+              <li>Tier `3`: Greater than or equal to `15000 ETH` and less than `30000 ETH`</li>
+              <li>Tier `4`: Greater than or equal to `30000 ETH` and less than `60000 ETH`</li>
+              <li>Tier `5`: Greater than `60000 ETH`</li>
+            </ul> Each validator "locks in" the five tiers that the Connector
+            was returning at the time of staking, for the whole validator
+            lifetime.
+          example:
+            - 7
+            - 5
+            - 4
+            - 3
+            - 2
+        fees:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: >-
+            Your operator fee rate (%), charged based on a percentage of staking
+            rewards. Can vary over time. Each validator "locks in" the fee that
+            the Connector was returning at the time of staking, for the whole
+            validator lifetime.
+          example: 5
+          deprecated: true
+        tvl:
+          type: number
+          minimum: 0
+          description: >-
+            <strong>In ETH, not in Dollars.</strong> TVL is the sum of the
+            validators' balances. It is the amount of ETH in the operator's
+            validators. It includes the initial 32ETH deposit + Consensus Layer
+            rewards. It includes all the validators (both private and public)
+            that a Node Operator can disclose (without NDA or other
+            constraints).
+          example: 7060624149.296207
+      required:
+        - feeTiers
+        - tvl
+  securitySchemes:
+    BearerAuth:
+      description: >-
+        As a staking service provider, you are responsible of setting up
+        authentication on your **Connector**. You can decide it to support
+        [OAuth Client Credentials
+        authentication](/mmi-staking-middleware-api/docs/integrating-via-rest-api/authentication#using-oauth-client-credentials).
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: >-
+        As a staking service provider, you are responsible of setting up
+        authentication on your **Connector**. You can decide it to support [API
+        Key
+        authentication](/mmi-staking-middleware-api/docs/integrating-via-rest-api/authentication/#using-an-api-key).
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+tags:
+  - name: Stakes

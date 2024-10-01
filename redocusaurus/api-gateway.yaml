@@ -1,0 +1,3737 @@
+openapi: 3.0.1
+info:
+  version: v1
+  title: Web API
+  description: >
+    # Overview
+
+    The MetaMask Institutional Web API lets you retrieve your transactions
+    history and snapshots of your portfolio valuations, automate reporting, or
+    build your own applications. To get started:
+
+
+    1. Log in the [dashboard](https://metamask-institutional.io/)
+
+    2. Visit the page [API](https://metamask-institutional.io/api-subscription)
+
+    3. Generate your API key
+
+    4. Use the API key in your HTTP requests
+
+
+    # Authorization
+
+    <SecurityDefinitions />
+
+
+    # Rate Limits
+
+    Excessive Web API requests in a short duration may trigger a 429 error
+    response from MetaMask Institutional, indicating that your API key has hit
+    our rate limit. We enforce these limits to ensure the stability of our API.
+
+
+    Our API rate limit is determined by the number of calls your application
+    makes within a rolling 1-second window. Exceeding this limit will result in
+    429 error responses, potentially leading to unexpected behavior in your
+    application. The limit varies based on your MetaMask Institutional
+    subscription.
+
+
+    Throttling is an effective strategy to ensure your application stays within
+    the rate limits. It involves limiting the number of API requests your
+    application can make in a given amount of time. This can be achieved by
+    implementing a delay between requests or queuing requests and processing
+    them at a fixed rate.
+
+
+    There are several libraries available that can help you implement throttling
+    in your application:
+
+    - For Node.js, consider using the
+    [Bottleneck](https://www.npmjs.com/package/bottleneck) library. It's a
+    powerful, easy-to-use rate limiter that you can use to control the rate of
+    API requests.
+
+    - For Python, you might want to use [ratelimiter](ratelimiter), which offers
+    a simple and flexible rate limiting implementation.
+
+    - For Java, [Bucket4j](Bucket4j) is a powerful library that supports
+    multiple rate limiting algorithms.
+
+    - For Ruby, [ratelimit](https://rubygems.org/gems/ratelimit/versions/0.0.6)
+    is a straightforward rate limiter that's easy to integrate into any
+    application.
+
+
+    Remember, the key to successful throttling is to balance between staying
+    within the rate limits and providing a smooth user experience.
+
+
+    # Monthly Quotas
+
+    Each API key on the MetaMask Institutional Web API is subject to a monthly
+    quota, which is determined by your subscription level. For example, an API
+    key may be allocated a quota of 1,000 requests per month.
+
+
+    At the commencement of each new month, the usage count is reset to zero,
+    providing a fresh quota for the month ahead.
+
+
+    It's important to note that even after reaching the monthly quota, the API
+    key remains active. You can continue to make requests using the same API
+    key. However, any requests beyond the quota will incur additional charges,
+    referred to as overage fees. Please review your subscription details for
+    information on these fees.
+
+
+    # Support
+
+    If you have any questions or run into any issues while using the MetaMask
+    Institutional Web API, you can find help in the [MetaMask Institutional
+    Knowledge Base](https://support.metamask-institutional.io/), or [Contact
+    Support](https://support.metamask-institutional.io/) to get in touch with
+    our support team.
+
+
+    # Legal
+
+    By using MetaMask Institutional Web API, you accept the [Terms and
+    Conditions](https://drive.google.com/file/d/1YWnTSYLw4WXMZQIRvFRRxnr1FDd7azqV/view?usp=sharing).
+servers:
+  - url: https://api.metamask-institutional.io
+tags:
+  - name: Account
+    description: >
+      Manage your MMI account.
+
+
+      Addresses saved in the account are included in automatic
+
+      snapshots and have their transaction history monitored. Addresses involved
+
+      in transactions the customer made through the MMI extension are
+
+      automatically added to this list. Additionally, customers have the option
+
+      to append addresses by utilizing the endpoint `PUT
+
+      /account/addresses`.
+
+
+      You don't need to own the signing keys of an address to save it in your
+      account.
+  - name: Snapshots
+    description: >
+      Retrieve valuations of your assets at specific times across your
+      addresses. 
+
+
+      The scope of each snapshot is determined by its creation method:
+
+      - **Automatically Created**: Covers all addresses saved in the customer's
+      account.
+
+      - **Manually Created**: Covers the addresses passed in the `POST
+      /snapshots` request body.
+  - name: Transactions
+    description: >-
+      The past transactions related to addresses that have transacted through
+      MMI or added to customer's accounts.
+  - name: DeFi
+    description: Get detailed Profit & Loss data on open DeFi positions.
+  - name: address_model
+    x-displayName: Address
+    description: |
+      <SchemaDefinition schemaRef="#/components/schemas/CustomerAddress" />
+  - name: position_model
+    x-displayName: Position
+    description: |
+      <SchemaDefinition schemaRef="#/components/schemas/Position" />
+  - name: profit_model
+    x-displayName: Profit
+    description: |
+      <SchemaDefinition schemaRef="#/components/schemas/Profit" />
+  - name: transaction_model
+    x-displayName: Transaction
+    description: |
+      <SchemaDefinition schemaRef="#/components/schemas/TransferDto" />
+x-tagGroups:
+  - name: General
+    tags:
+      - Account
+      - Snapshots
+      - Transactions
+      - DeFi
+  - name: Models
+    tags:
+      - address_model
+      - position_model
+      - profit_model
+      - transaction_model
+paths:
+  /snapshots/{snapshotId}:
+    get:
+      tags:
+        - Snapshots
+      summary: Get Snapshot
+      description: >
+        Get a comprehensive overview of the customer's portfolio's positions and
+        valuations at a given time. Includes token balances, DeFi positions and
+        NFT collections. The snapshot IDs can be found using the endpoint `GET
+        /snapshots`.
+
+
+        The endpoint can return data in various MIME types:
+          - To get data as JSON, do not set the header `Accept`, or set it to `Accept: application/json` or `Accept: */*`</li>
+          - To download as a binary .xlsx file, set the header `Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`</li>
+      operationId: GetSnapshotById
+      parameters:
+        - name: snapshotId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: currency
+          required: false
+          in: query
+          description: The currency to get the price values in.
+          example: usd
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSnapshotResponseDto'
+        '400':
+          description: Unknown currency XYZ.
+          content:
+            application/json:
+              example:
+                statusCode: 400
+                message: Unknown currency xyz.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Customer snapshot couldn't be found.
+          content:
+            application/json:
+              example:
+                statusCode: 404
+                message: Customer snapshot couldn't be found.
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request GET \
+              --url 'https://api.metamask-institutional.io/snapshots/{snapshotId}currency=usd' \
+              --header 'X-Api-Key: <APIKEY>'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'GET',
+              url: 'https://api.metamask-institutional.io/snapshots/{snapshotId}',
+              params: {currency: 'usd'},
+              headers: {'X-Api-Key': '<APIKEY>'}
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url =
+            "https://api.metamask-institutional.io/snapshots/{snapshotId}?currency=usd"
+
+            headers = {
+                "X-Api-Key": "<APIKEY>"
+            }
+
+            response = requests.request("GET", url, headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /snapshots:
+    get:
+      tags:
+        - Snapshots
+      summary: Search Snapshot IDs
+      description: >-
+        Fetch a paginated list containing the IDs of snapshots associated with a
+        specific customer, matching the search filters. The IDs can then be used
+        to fetch the actual snapshot content with `GET /snapshots/{snapshotId}`.
+      operationId: GetSnapshotIds
+      parameters:
+        - name: fromTimestamp
+          required: false
+          in: query
+          description: >-
+            The start date and time for the range of snapshots to retrieve,
+            formatted as an ISO 8601 string.  <br> <br> **Depending how you run
+            the query, you might need to URL-encode this parameter. For instance
+            `2023-10-25T13:36:45+02:00` would become
+            `2023-10-25T13%3A36%3A45%2B02%3A00`.**
+          example: '2023-10-25T13:36:45+02:00'
+          schema:
+            type: string
+        - name: toTimestamp
+          required: false
+          in: query
+          description: >-
+            The end date and time for the range of snapshots to retrieve,
+            formatted as an ISO 8601 string. <br> <br> **Depending how you run
+            the query, you might need to URL-encode this parameter. For instance
+            `2023-10-26T13:36:45+02:00` would become
+            `2023-10-26T13%3A36%3A45%2B02%3A00`.**
+          example: '2023-10-26T13:36:45+02:00'
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: The page number to retrieve in the paginated list of snapshots.
+          example: 1
+          schema:
+            minimum: 1
+            type: number
+        - name: perPage
+          required: false
+          in: query
+          description: The number of snapshots to retrieve per page.
+          example: 10
+          schema:
+            minimum: 10
+            type: number
+        - name: sort
+          required: false
+          in: query
+          description: The property to sort the snapshots by.
+          schema:
+            enum:
+              - createdAt
+              - updatedAt
+            type: string
+        - name: order
+          required: false
+          in: query
+          description: The order to sort the snapshots in.
+          schema:
+            enum:
+              - desc
+              - asc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSnapshotsDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request GET \
+              --url 'https://api.metamask-institutional.io/snapshots?fromTimestamp=2023-10-25T13%3A36%3A45%2B02%3A00&toTimestamp=2023-10-26T13%3A36%3A45%2B02%3A00&page=2&perPage=10&sort=createdAt&order=asc' \
+              --header 'X-Api-Key: <APIKEY>'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'GET',
+              url: 'https://api.metamask-institutional.io/snapshots',
+              params: {
+                fromTimestamp: '2022-10-25T13:36:45+02:00',
+                toTimestamp: '2023-10-26T13:36:45+02:00',
+                page: '2',
+                perPage: '10',
+                sort: 'createdAt',
+                order: 'asc'
+              },
+              headers: {'X-Api-Key': '<APIKEY>'}
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/snapshots"
+
+            querystring =
+            {"fromTimestamp":"2022-10-25T13:36:45+02:00","toTimestamp":"2023-10-26T13:36:45+02:00","page":"2","perPage":"10","sort":"createdAt","order":"asc"}
+
+            headers = {"X-Api-Key": "<APIKEY>"}
+
+            response = requests.request("GET", url, headers=headers,
+            params=querystring)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+    post:
+      tags:
+        - Snapshots
+      summary: Create Snapshot
+      description: >-
+        Initiate the creation of a new snapshot. Please note that the exact
+        timing of the snapshot creation is not guaranteed. This is because the
+        request is queued and processed asynchronously.  <br> <br> Responds with
+        the ID of the snapshot to be created. <br> <br> After this request
+        responded successfully, wait some time for the snapshot to be created,
+        and query the endpoint `GET /snapshots/{snapshotId}` to get its content.
+        It typically takes between a few seconds and a few minutes, depending on
+        how busy the queue is. <br> <br> Snapshot data is cached for a period of
+        1 hour. This means that repeated requests within this timeframe will
+        create new snapshots with the same data.  After the cache period
+        expires, a new request will create a snapshot with fresh data.
+      operationId: CreateSnapshot
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCustomerSnapshotDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostCustomerSnapshotResponseDto'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                InvalidAddresses:
+                  value:
+                    statusCode: 400
+                    message:
+                      - addresses must be an array
+                      - addresses should not be empty
+                      - >-
+                        Some of the provided addresses do not match the format
+                        of any supported blockchain.
+                    error: Bad Request
+                SnapshottedAddressNotInAccount:
+                  value:
+                    statusCode: 400
+                    message:
+                      - >-
+                        Snapshot creation is limited to addresses saved in your
+                        account. Please ensure all addresses in the request are
+                        saved beforehand or remove any unsaved addresses from
+                        the request body.
+                    error: Bad Request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request POST \
+              --url https://api.metamask-institutional.io/snapshots \
+              --header 'Content-Type: application/json' \
+              --header 'X-Api-Key: <APIKEY>' \
+              --data '{
+              "addresses": [
+                "0xC71E8d9c352512540A94a0b85582a96f82aC7b4e",
+                "8ye1k4uMM5NDAAK6ntpe37BSTvNWRdsfbJTMz1GmSPF9"
+              ]
+            }'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'POST',
+              url: 'https://api.metamask-institutional.io/snapshots',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': '<APIKEY>'
+              },
+              data: {
+                addresses: [
+                  '0xC71E8d9c352512540A94a0b85582a96f82aC7b4e',
+                  '8ye1k4uMM5NDAAK6ntpe37BSTvNWRdsfbJTMz1GmSPF9'
+                ]
+              }
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/snapshots"
+
+            payload = {"addresses":
+            ["0xC71E8d9c352512540A94a0b85582a96f82aC7b4e",
+            "8ye1k4uMM5NDAAK6ntpe37BSTvNWRdsfbJTMz1GmSPF9"]}
+
+            headers = {"X-Api-Key": "<APIKEY>"}
+
+            response = requests.request("POST", url, data=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /account/aud:
+    get:
+      tags:
+        - Account
+      summary: Get Current AUD
+      description: >
+        Fetch the current portoflio valuation, in US Dollars of the customer. 
+
+
+        The valuation at the specified date is determined by valuing all assets
+
+        within the customer's addresses. Including, the dollar value of any
+        token assets, NFT
+
+        dollar floor prices, dollar value of any DeFi assets (less the dollar
+
+        value of any DeFi debts), dollar value of any rewards or other accruals,
+
+        and the dollar value of staking positions and staking rewards.
+      operationId: GetCurrentAud
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAudDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request GET \
+              --url https://api.metamask-institutional.io/account/aud \
+              --header 'X-Api-Key: <APIKEY>'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'GET',
+              url: 'https://api.metamask-institutional.io/account/aud',
+              headers: {'X-Api-Key': '<APIKEY>'}
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/account/aud"
+
+            payload = ""
+
+            headers = {"X-Api-Key": "<APIKEY>"}
+
+            response = requests.request("GET", url, data=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /account/addresses:
+    get:
+      summary: Get Addresses
+      description: >-
+        Retrieves a list of blockchain addresses saved in the current customer's
+        account.
+      operationId: GetAddresses
+      responses:
+        '200':
+          description: A list of addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerAddress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Account
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request GET \
+              --url https://api.metamask-institutional.io/account/addresses \
+              --header 'X-Api-Key: <APIKEY>'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'GET',
+              url: 'https://api.metamask-institutional.io/account/addresses',
+              headers: {'X-Api-Key': '<APIKEY>'}
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/account/addresses"
+
+            payload = ""
+
+            headers = {"X-Api-Key": "<APIKEY>"}
+
+            response = requests.request("GET", url, data=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+    put:
+      summary: Save Several Addresses
+      description: >
+        Save new blockchain addresses to the customer's account or
+
+        update details of existing addresses. This endpoint accepts a list of
+
+        address objects. Each object can represent a new address to be added or
+
+        updates to an existing address, such as changing its `name` or
+        visibility
+
+        (`hidden` attribute).  
+
+
+        This endpoint supports the following operations:
+
+
+        - **Saving New Addresses**: Submit address objects with unique `address`
+
+        not previously associated with the customer's account.
+
+
+        - **Updating Existing Addresses**: To update an address, submit an
+
+        address object with the same `address` as an existing entry. Modify the
+
+        `name` and/or `hidden` fields as desired.
+      operationId: SaveSeveralAddresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/UpsertCustomerAddressesDto'
+      responses:
+        '200':
+          description: Saved or updated addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerAddress'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Account
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request PUT \
+              --url https://api.metamask-institutional.io/account/addresses \
+              --header 'Content-Type: application/json' \
+              --header 'X-Api-Key: <APIKEY>' \
+              --data '[
+              {
+                "address": "eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e",
+                "name": "My address 1",
+                "hidden": false
+              },
+              {
+                "address": "eip155:1:0x0000000000000000000000000000000000000000",
+                "name": "My address 2",
+                "hidden": false
+              }
+            ]'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'PUT',
+              url: 'https://api.metamask-institutional.io/account/addresses',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Api-Key': '<APIKEY>'
+                },
+                data: [
+                  {
+                    address: 'eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e',
+                    name: 'My address 1',
+                    hidden: false
+                  },
+                  {
+                    address: 'eip155:1:0x0000000000000000000000000000000000000000',
+                    name: 'My address 2',
+                    hidden: false
+                  }
+                ]
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/account/addresses"
+
+            payload = [
+                {
+                    "address": "eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e",
+                    "name": "My address 1",
+                    "hidden": False
+                },
+                {
+                    "address": "eip155:1:0x0000000000000000000000000000000000000000",
+                    "name": "My address 2",
+                    "hidden": False
+                }
+            ]
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-Api-Key": "<APIKEY>"
+            }
+
+            response = requests.request("PUT", url, data=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+    delete:
+      summary: Remove Several Addresses
+      description: >
+        Remove one or more blockchain addresses from the customer's account in a
+        single request. Useful to clean up addresses that are no longer needed
+        or were added erroneously.
+
+
+        **Important**: Removal of addresses from the account will exclude them
+        from future automatic snapshots.
+      operationId: RemoveSeveralAddresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/RemoveCustomerAddressesDto'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      tags:
+        - Account
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request DELETE \
+              --url https://api.metamask-institutional.io/account/addresses \
+              --header 'Content-Type: application/json' \
+              --header 'X-Api-Key: <APIKEY>' \
+              --data '[
+              {
+                "address": "eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e",
+              },
+              {
+                "address": "eip155:1:0x0000000000000000000000000000000000000000",
+              }
+            ]'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'DELETE',
+              url: 'https://api.metamask-institutional.io/account/addresses',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': '<APIKEY>'
+              },
+              data: [
+                {address: 'eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e'},
+                {address: 'eip155:1:0x0000000000000000000000000000000000000000'}
+              ]
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/account/addresses"
+
+            payload = [{"address":
+            "eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e"}, {"address":
+            "eip155:1:0x0000000000000000000000000000000000000000"}]
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-Api-Key": "<APIKEY>"
+            }
+
+            response = requests.request("DELETE", url, data=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /transactions/search:
+    post:
+      summary: Search Transactions
+      description: >
+        This endpoint enables customers to search through transactions. It
+        provides a comprehensive tool for analyzing transaction history across
+        various blockchains, allowing for detailed insights into transactions
+        based on a wide range of criteria, including sender and receiver
+        addresses, chain IDs, timestamps, asset types, and more.
+
+
+        **Note:** This search functionality retrieves transactions related to
+        addresses that have been used in transactions through the MMI extension
+        or that are added to the customer's account.
+
+
+        **Note:** There may be a brief delay of a few seconds before a
+        transaction becomes available after being included in a block. This is
+        due to the asynchronous indexing process.
+      operationId: SearchTransactions
+      tags:
+        - Transactions
+      parameters:
+        - name: page
+          in: query
+          description: The page of results being requested
+          required: false
+          schema:
+            type: number
+            default: 1
+            example: 1
+        - name: perPage
+          in: query
+          description: The number of results per page
+          required: false
+          schema:
+            type: number
+            default: 50
+            example: 50
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchTransactionsBodyDto'
+      responses:
+        '200':
+          description: A list of transactions that match the search criteria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransfersDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request POST \
+              --url 'https://api.metamask-institutional.io/transactions/search?perPage=10&page=2' \
+              --header 'Content-Type: application/json' \
+              --header 'X-Api-Key: <APIKEY>' \
+              --data '{
+              "from": [
+                "0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea"
+              ],
+              "to": [
+                "0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea"
+              ],
+              "chainIds": [
+                1,
+                5,
+                137
+              ],
+              "fromTimestamp": "2022-10-25T13:36:45+02:00",
+              "toTimestamp": "2023-10-26T13:36:45+02:00",
+              "assetTypes": [
+                "token",
+                "native"
+              ],
+              "contractAddresses": [
+                "0xfaff15c6cdaca61a4f87d329689293e07c98f578"
+              ],
+              "tokenIds": [
+                "5",
+                "1245"
+              ],
+              "transactionHashes": [
+                "0xfcae084c1fc34650747e09215095daa1d2c0fb001d065dc27dc3f5cadda2060a",
+                "0xfe0c49dc665b5bd1ba2d3904f8469ea7eec7647eb07a9e1416fdaba9d46461b9"
+              ],
+              "blockNumbers": [
+                18685487,
+                3245
+              ]
+            }'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'POST',
+              url: 'https://api.metamask-institutional.io/transactions/search',
+              params: {perPage: '10', page: '2'},
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': '<APIKEY>'
+              },
+              data: {
+                from: ['0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'],
+                to: ['0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'],
+                chainIds: [1, 5, 137],
+                fromTimestamp: '2022-10-25T13:36:45+02:00',
+                toTimestamp: '2023-10-26T13:36:45+02:00',
+                assetTypes: ['token', 'native'],
+                contractAddresses: ['0xfaff15c6cdaca61a4f87d329689293e07c98f578'],
+                tokenIds: ['5', '1245'],
+                transactionHashes: [
+                  '0xfcae084c1fc34650747e09215095daa1d2c0fb001d065dc27dc3f5cadda2060a',
+                  '0xfe0c49dc665b5bd1ba2d3904f8469ea7eec7647eb07a9e1416fdaba9d46461b9'
+                ],
+                blockNumbers: [18685487, 3245]
+              }
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/transactions/search"
+
+            querystring = {"perPage":"10","page":"2"}
+
+            payload = {
+                "from": ["0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea"],
+                "to": ["0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea"],
+                "chainIds": [1, 5, 137],
+                "fromTimestamp": "2022-10-25T13:36:45+02:00",
+                "toTimestamp": "2023-10-26T13:36:45+02:00",
+                "assetTypes": ["token", "native"],
+                "contractAddresses": ["0xfaff15c6cdaca61a4f87d329689293e07c98f578"],
+                "tokenIds": ["5", "1245"],
+                "transactionHashes": ["0xfcae084c1fc34650747e09215095daa1d2c0fb001d065dc27dc3f5cadda2060a", "0xfe0c49dc665b5bd1ba2d3904f8469ea7eec7647eb07a9e1416fdaba9d46461b9"],
+                "blockNumbers": [18685487, 3245]
+            }
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-Api-Key": "<APIKEY>"
+            }
+
+            response = requests.request("POST", url, json=payload,
+            headers=headers, params=querystring)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /defi-data:
+    post:
+      summary: Get Positions / Get Profits
+      description: >
+        A JSON-RPC endpoint that supports two distinct methods:
+          - **Get Positions**: Get a structured overview of the open DeFi positions linked to the specified address, at current time or at specific past block. In the JSON body, use `{ "method": "positions", ... }`.
+          - **Get Profits**: Get a structured overview of performance (%) and USD profits of the specified address' DeFi positions, at current time or at specific past block. In the JSON body, use `{ "method": "profits", ... }`. 
+
+        The information is provided from a routinely refreshed cache. To
+        insistently retrieve the most recent data, include the flag `{
+        "ignoreCache": true }`.
+      operationId: GetDefiDataInstitutional
+      tags:
+        - DeFi
+      requestBody:
+        $ref: '#/components/requestBodies/GetDefiDataInstitutionalBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/DefiDataResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - ApiKey: []
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --request POST \
+              --url https://api.metamask-institutional.io/defi-data \
+              --header 'Content-Type: application/json' \
+              --header 'X-Api-Key: <APIKEY>' \
+              --data '{
+              "method": "positions",
+              "params": {
+                "userAddress": "0x47ab2ba28c381011fa1f25417c4c2b2c0d5b4781"
+              }
+            }'
+        - lang: JavaScript
+          source: |
+            import axios from "axios";
+            const options = {
+              method: 'POST',
+              url: 'https://api.metamask-institutional.io/defi-data',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': '<APIKEY>'
+              },
+              data: {
+                method: 'positions',
+                params: {userAddress: '0x47ab2ba28c381011fa1f25417c4c2b2c0d5b4781'}
+              }
+            };
+            axios.request(options).then(function (response) {
+              console.log(response.data);
+            }).catch(function (error) {
+              console.error(error);
+            });
+        - lang: Python
+          source: >
+            import requests
+
+            url = "https://api.metamask-institutional.io/defi-data"
+
+            payload = {
+                "method": "positions",
+                "params": {"userAddress": "0x47ab2ba28c381011fa1f25417c4c2b2c0d5b4781"}
+            }
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-Api-Key": "<APIKEY>"
+            }
+
+            response = requests.request("POST", url, json=payload,
+            headers=headers)
+
+            print(response.text)
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /health:
+    get:
+      summary: Get Health
+      description: >
+        Performs a health check across various internal services and endpoints,
+        returning the HTTP status of each. This endpoint is useful for
+        monitoring the operational status of the service and its components. The
+        response includes an array of objects, each representing a service
+        check, with details about the HTTP method used, the URL checked, and the
+        resulting HTTP status code.
+      operationId: GetHealth
+      responses:
+        '200':
+          description: The health check result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthCheckItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub:
+            - >-
+              arn:aws:apigateway:${AWSRegion}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations
+            - AWSRegion:
+                Ref: AWS::Region
+              FunctionArn:
+                Fn::GetAtt:
+                  - LambdaIntegrationRequest
+                  - Arn
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /docs:
+    x-amazon-apigateway-any-method:
+      x-amazon-apigateway-integration:
+        uri: https://consensys-vertical-apps.github.io/mmi-api-gateway/docs/
+        passthroughBehavior: when_no_match
+        httpMethod: ANY
+        type: http_proxy
+components:
+  requestBodies:
+    GetDefiDataInstitutionalBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/GetPositionsInstitutionalRpcRequest'
+              - $ref: '#/components/schemas/GetProfitsInstitutionalRpcRequest'
+  schemas:
+    Caip10AccountId:
+      type: string
+      description: >
+        Represents a blockchain account using the CAIP-10 format, as defined in
+        the
+
+        [CAIP-10
+
+        standard](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-10.md).
+
+        The format is `caip2_namespace:caip2_reference:account_address`, where:
+
+
+        - `caip2_namespace` identifies the blockchain namespace.
+
+        - `caip2_reference` specifies the reference identifier for the
+        blockchain.
+
+        - `account_address` is the specific account address on the blockchain.
+
+
+        Supported namespaces and references include:
+
+
+        - `eip155:1:account_address` for Ethereum Mainnet, where `1` is the
+        chain ID for Ethereum Mainnet.
+
+        - `eip155:42:account_address` for Kovan Testnet, an example of an
+        Ethereum test network with chain ID `42`.
+
+        - `eip155:<x>:account_address` for any EVM (Ethereum Virtual Machine)
+        compatible blockchain. Replace `<x>` with the chain ID specific to that
+        blockchain. This allows for flexibility in supporting various
+        EVM-compatible chains.
+
+        - `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:account_address` for Solana,
+        where `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` is the Solana Mainnet.
+
+
+        **Note:** Adding a new address in the format `eip155:1:0xXXX`
+        automatically
+
+        associates it with all EVM-compatible blockchains. This feature allows
+        for
+
+        broader compatibility and simplifies address management across different
+
+        networks.
+      example: eip155:1:0xC71E8d9c352512540A94a0b85582a96f82aC7b4e
+    Chain:
+      type: number
+      enum:
+        - 1
+        - 10
+        - 56
+        - 137
+        - 250
+        - 8453
+        - 42161
+        - 43114
+        - 59144
+      description: IDs of supported EVM chains
+    ChainIdToBlockNumberMap:
+      type: object
+      description: >-
+        Instead of current values, return the values as they were historically
+        at given block numbers on given chains.
+      properties:
+        '1':
+          type: integer
+          format: int32
+          example: 18982865
+          description: Ethereum Mainnet
+        '10':
+          type: integer
+          format: int32
+          example: 114683740
+          description: OP Mainnet
+        '56':
+          type: integer
+          format: int32
+          example: 35147795
+          description: BNB Smart Chain Mainnet
+        '137':
+          type: integer
+          format: int32
+          example: 52193595
+          description: Polygon Mainnet
+        '250':
+          type: integer
+          format: int32
+          example: 74064840
+          description: Fantom Opera
+        '8453':
+          type: integer
+          format: int32
+          example: 9088502
+          description: Base
+        '42161':
+          type: integer
+          format: int32
+          example: 169326747
+          description: Arbitrum One
+        '43114':
+          type: integer
+          format: int32
+          example: 12885796
+          description: Avalanche C-Chain
+        '59144':
+          type: integer
+          format: int32
+          example: 1609374
+          description: Linea
+    CustomerAddress:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique identifier for the entity.
+          example: f32e96af-9a91-4c3b-938a-42f3df18e270
+        namespace:
+          type: string
+          description: >
+            The
+            [CAIP-2](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md)
+            namespace of the blockchain network the address belongs to.
+          example: eip155:1
+        address:
+          type: string
+          description: The blockchain address.
+          example: '0xC71E8d9c352512540A94a0b85582a96f82aC7b4e'
+        name:
+          type: string
+          nullable: true
+          description: >-
+            A human-readable name for the entity, specified by the customer at
+            creation.
+          example: My Address 1
+        hidden:
+          type: boolean
+          description: >-
+            Indicates whether the entity is hidden from the Portfolio Dashboard
+            views.
+          example: false
+        custodian:
+          type: object
+          description: >-
+            Details about the custodian responsible for managing the signing
+            keys of the address.
+          properties:
+            environment:
+              type: string
+              nullable: true
+              description: The environment in which the custodian operates.
+            displayName:
+              type: string
+              description: A display name for the custodian.
+              example: Sample Custodian
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the entity was created.
+          example: '2023-12-11T14:30:10.960Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: The timestamp when the entity was last updated.
+          example: '2024-02-28T10:39:48.150Z'
+      required:
+        - id
+        - namespace
+        - address
+        - hidden
+    CustomerAudDto:
+      type: object
+      properties:
+        total:
+          type: number
+          description: >-
+            The total dollar value of the portfolio. Is equal to `tokenBalances
+            + deFiPositions + nftCollections`.
+          minimum: 0
+        tokenBalances:
+          type: number
+          description: The dollar value of any token assets.
+          minimum: 0
+        deFiPositions:
+          type: number
+          description: >-
+            The dollar value of any DeFi assets (less the dollar value of any
+            DeFi debts), dollar value of any rewards or other accruals, and the
+            dollar value of staking positions and staking rewards.
+          minimum: 0
+        nftCollections:
+          type: number
+          description: The dollar value of NFT floor prices.
+          minimum: 0
+      required:
+        - total
+        - tokenBalances
+        - deFiPositions
+        - nftCollections
+    DefiData:
+      type: object
+      required:
+        - createdAt
+        - updatedAt
+        - data
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-12T08:25:56.455Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2024-01-12T08:25:56.455Z'
+        data:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/Position'
+            - type: array
+              items:
+                $ref: '#/components/schemas/Profit'
+    Eth1Address:
+      type: string
+      description: >-
+        An ethereum 1 address. 20-bytes, hex encoded with 0x prefix, case
+        insensitive.
+      example: '0x47ab2ba28c381011fa1f25417c4c2b2c0d5b4781'
+      pattern: ^0x[a-fA-F0-9]{40}$
+    GetPositionsInstitutionalRpcRequest:
+      allOf:
+        - $ref: '#/components/schemas/GetPositionsRpcRequest'
+        - $ref: '#/components/schemas/IgnoreCache'
+    GetPositionsRpcRequest:
+      allOf:
+        - $ref: '#/components/schemas/RpcRequest'
+        - type: object
+          properties:
+            method:
+              type: string
+              enum:
+                - positions
+              description: The JSON-RPC method. Must be "positions".
+            params:
+              $ref: '#/components/schemas/GetPositionsRpcRequestParams'
+          required:
+            - method
+            - params
+    GetPositionsRpcRequestParams:
+      type: object
+      properties:
+        userAddress:
+          $ref: '#/components/schemas/Eth1Address'
+        filterProtocolIds:
+          type: array
+          description: Limit the results to positions on the passed list of DeFi protocols.
+          items:
+            $ref: '#/components/schemas/Protocol'
+        filterChainIds:
+          type: array
+          description: Limit the results to positions on the passed list of chains.
+          items:
+            $ref: '#/components/schemas/Chain'
+        blockNumbers:
+          $ref: '#/components/schemas/ChainIdToBlockNumberMap'
+        filterProtocolTokens:
+          type: array
+          example:
+            - '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656'
+          description: Limit the results to positions on the passed list of LP tokens.
+          items:
+            $ref: '#/components/schemas/Eth1Address'
+      required:
+        - userAddress
+    GetProfitsInstitutionalRpcRequest:
+      allOf:
+        - $ref: '#/components/schemas/GetProfitsRpcRequest'
+        - $ref: '#/components/schemas/IgnoreCache'
+    GetProfitsRpcRequest:
+      allOf:
+        - $ref: '#/components/schemas/RpcRequest'
+        - type: object
+          properties:
+            method:
+              type: string
+              enum:
+                - profits
+              description: The JSON-RPC method. Must be "profits".
+            params:
+              $ref: '#/components/schemas/GetProfitsRpcRequestParams'
+          required:
+            - method
+            - params
+    GetProfitsRpcRequestParams:
+      type: object
+      properties:
+        userAddress:
+          $ref: '#/components/schemas/Eth1Address'
+        timePeriod:
+          $ref: '#/components/schemas/TimePeriod'
+        filterProtocolIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol'
+        filterChainIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chain'
+        toBlockNumbersOverride:
+          $ref: '#/components/schemas/ChainIdToBlockNumberMap'
+        filterProtocolTokens:
+          type: array
+          example:
+            - '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656'
+          description: Limit the results to profits on the passed list of LP tokens.
+          items:
+            $ref: '#/components/schemas/Eth1Address'
+      required:
+        - userAddress
+        - timePeriod
+    GetSnapshotResponseDto:
+      type: object
+      example:
+        id: af261deb-1b94-4fb8-a713-6afaa438849e
+        addresses:
+          - id: 0237f6b2-24c2-4a0c-9c66-c55a4fc780a5
+            address: '0xca8f1F0245530118D0cf14a06b01Daf8f76Cf281'
+            namespace: eip155:1
+            name: Custody Account A
+          - id: 81b5ca0a-5a76-46dc-8b32-fa8475422ff5
+            address: '0x49b87eD3E3a47fbCb7ccC961a084b3544f9b59dF'
+            namespace: eip155:1
+            name: Custody Account B
+          - id: 6e937fed-e1ce-4dfe-b2e8-74860fd3390e
+            address: '0x27986E3fc18746c518aE43534ea94F8b7a71FDF4'
+            namespace: eip155:1
+            name: Custody Account C
+        cefiAccounts:
+          - id: 646d3b99-acd0-42fd-94f1-bdd8b4278aac
+            idAtPlatform: 93e0dda7d8e384d06b62d86c60ed0b8c8b84c575:Margin
+            name: Binance International Margin Account
+            platformName: Binance API
+            platformIcon: >-
+              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFwSURBVHgB3VQ9T8MwEL0EUgWK1GzdOsDMxk+APayoqFk7dc3WzjCUiX8BWboww8JUiT9gdWMrDAwIIffOiavU8Ueabn3Skxwnee98dz6AfUeEHCEzJEPygqzYG8AOiJHLkqiJrInRQw1hlZO64pMG4pJTl3hiE0hvWzztt1wmsc2A2cS/XtqCDhOqWyQFD5ToE50rikPaD+D7h8PvH8DlBf3mwdvHv+7zEPmJfFdfZLqIhteBiHrxfMzPz3xBWtPezdWh6RSZznmufthpe7xz4vHZfSiExTOS1rRH617XM7VuBZWcL54w6lN/bfb6eCRIa9qTpzHURMAHIzilOSfA5lobmxuVDup187TM7kJxEkqXmiJ5GoVznYG2yFRIUeQiXeUiD+PtijwC4x0I1iZSHNvWdhcGOgO6HEuXSQ1xBhbEYB0VgUvcGH0ZU4eAjWOoiXEDceckVZGAZfjB5nCLYQckkLddeZSwYo86L4K9xgp0slfc59YTYgAAAABJRU5ErkJggg==
+            platformType: binanceInternational
+          - id: 999f3391-412c-4dec-adb4-832e779afe81
+            idAtPlatform: 93e0dda7d8e384d06b62d86c60ed0b8c8b84c575:Spot
+            name: Binance International Spot Account
+            platformName: Binance API
+            platformIcon: >-
+              data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFwSURBVHgB3VQ9T8MwEL0EUgWK1GzdOsDMxk+APayoqFk7dc3WzjCUiX8BWboww8JUiT9gdWMrDAwIIffOiavU8Ueabn3Skxwnee98dz6AfUeEHCEzJEPygqzYG8AOiJHLkqiJrInRQw1hlZO64pMG4pJTl3hiE0hvWzztt1wmsc2A2cS/XtqCDhOqWyQFD5ToE50rikPaD+D7h8PvH8DlBf3mwdvHv+7zEPmJfFdfZLqIhteBiHrxfMzPz3xBWtPezdWh6RSZznmufthpe7xz4vHZfSiExTOS1rRH617XM7VuBZWcL54w6lN/bfb6eCRIa9qTpzHURMAHIzilOSfA5lobmxuVDup187TM7kJxEkqXmiJ5GoVznYG2yFRIUeQiXeUiD+PtijwC4x0I1iZSHNvWdhcGOgO6HEuXSQ1xBhbEYB0VgUvcGH0ZU4eAjWOoiXEDceckVZGAZfjB5nCLYQckkLddeZSwYo86L4K9xgp0slfc59YTYgAAAABJRU5ErkJggg==
+            platformType: binanceInternational
+        accountBundles:
+          - id: 284a0d2b-42c4-4f5e-960f-6bff1ddf0ecd
+            name: My Bundle 1
+            accounts:
+              - id: 0237f6b2-24c2-4a0c-9c66-c55a4fc780a5
+              - id: 6e937fed-e1ce-4dfe-b2e8-74860fd3390e
+        createdAt: '2024-08-27T11:48:41+02:00'
+        creationMode: manual
+        customer:
+          name: Digital Asset Ventures
+        data:
+          tokenBalances:
+            - accountAddress: '0x49b87eD3E3a47fbCb7ccC961a084b3544f9b59dF'
+              object: token
+              chainId: 137
+              address: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'
+              name: Wrapped Ether
+              symbol: WETH
+              iconUrl: >-
+                https://static.debank.com/image/matic_token/logo_url/0x7ceb23fd6bc0add59e62ac25578270cff1b9f619/61844453e63cf81301f845d7864236f6.png
+              balance: '0.005298290360074514'
+              value:
+                currency: usd
+                price: 2670.84
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 59144
+              address: '0xb97f21d1f2508ff5c73e7b5af02847640b1ff75d'
+              name: LineaBank Token
+              symbol: LAB
+              iconUrl: >-
+                https://static.debank.com/image/project/logo_url/linea_lineabank/d5325b9399421f44394632a6cc43c064.png
+              balance: '130.96631469258307'
+              value:
+                currency: usd
+                price: 0.034561010122596096
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 59144
+              address: '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f'
+              name: Wrapped Ether
+              symbol: WETH
+              iconUrl: >-
+                https://static.debank.com/image/linea_token/logo_url/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f/61844453e63cf81301f845d7864236f6.png
+              balance: '0.000004039452878022'
+              value:
+                currency: usd
+                price: 2670.84
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 59144
+              address: '0x0000000000000000000000000000000000000000'
+              name: ETH
+              symbol: ETH
+              iconUrl: >-
+                https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+              balance: '0.000510820088681029'
+              value:
+                currency: usd
+                price: 2670.84
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 1
+              address: '0x6b175474e89094c44da98b954eedeac495271d0f'
+              name: Dai Stablecoin
+              symbol: DAI
+              iconUrl: >-
+                https://static.debank.com/image/eth_token/logo_url/0x6b175474e89094c44da98b954eedeac495271d0f/549c4205dbb199f1b8b03af783f35e71.png
+              balance: '13.5658877'
+              value:
+                currency: usd
+                price: 0.9998
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 1
+              address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+              name: USD Coin
+              symbol: USDC
+              iconUrl: >-
+                https://static.debank.com/image/eth_token/logo_url/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/fffcd27b9efff5a86ab942084c05924d.png
+              balance: '0.627198'
+              value:
+                currency: usd
+                price: 0.9999000099990001
+            - accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+              object: token
+              chainId: 1
+              address: '0x0000000000000000000000000000000000000000'
+              name: ETH
+              symbol: ETH
+              iconUrl: >-
+                https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+              balance: '0.002485313373521565'
+              value:
+                currency: usd
+                price: 2670.01
+          defiPositions:
+            data:
+              - name: Aave V2
+                protocolType: Staked
+                protocolId: aave2
+                description: No description
+                siteUrl: https://app.aave.com
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/aave2/b8d1ef85570855176b102edf8cda6f8d.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 637.8953562269754
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/aave2/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9
+                    object: Asset
+                    name: Aave Token
+                    address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9'
+                    symbol: AAVE
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/eth_token/logo_url/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9/7baf403c819f679dc1c6571d9d978f21.png
+                    balance: 4.907434672844944
+                    marketValue: 637.8953562269754
+                    underlying:
+                      - object: Asset
+                        name: Aave Token
+                        address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9'
+                        symbol: AAVE
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/eth_token/logo_url/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9/7baf403c819f679dc1c6571d9d978f21.png
+                        balance: 4.907434672844944
+                        marketValue: 637.8953562269754
+                        value:
+                          price: 129.98550133672467
+                rewards:
+                  - object: Asset
+                    name: Aave Token
+                    address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9'
+                    symbol: AAVE
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/eth_token/logo_url/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9/7baf403c819f679dc1c6571d9d978f21.png
+                    balance: 0.2443776017386469
+                    value:
+                      price: 129.98550133672467
+                rewardsMarketValue: 31.765545077464456
+              - name: EigenLayer
+                protocolType: Liquidity Provision
+                protocolId: eigenlayer
+                description: No description
+                siteUrl: https://app.eigenlayer.xyz
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/eigenlayer/60961d60d58c7619cf845ff06b2236af.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 2397.176469334128
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/eigenlayer/0x1bee69b7dfffa4e2d53c2a2df135c388ad25dcd2
+                    object: Asset
+                    name: ETH
+                    address: '0x1bee69b7dfffa4e2d53c2a2df135c388ad25dcd2'
+                    symbol: ETH
+                    marketValue: 2397.176469334128
+                    underlying:
+                      - object: Token
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 0.8978155397673145
+                        marketValue: 2397.176469334128
+                        value:
+                          price: 2670.01
+                borrow: []
+                rewards: []
+                rewardsMarketValue: 0
+              - name: EigenLayer
+                protocolType: Liquidity Provision
+                protocolId: eigenlayer
+                description: No description
+                siteUrl: https://app.eigenlayer.xyz
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/eigenlayer/60961d60d58c7619cf845ff06b2236af.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 9262.209686101702
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/eigenlayer/0x93c4b944d05dfe6df7645a86cd2206016c51564d
+                    object: Asset
+                    name: Liquid staked Ether 2.0
+                    address: '0x93c4b944d05dfe6df7645a86cd2206016c51564d'
+                    symbol: Liquid staked Ether 2.0
+                    marketValue: 9262.209686101702
+                    underlying:
+                      - object: Token
+                        name: Liquid staked Ether 2.0
+                        address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
+                        symbol: stETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/eth_token/logo_url/0xae7ab96520de3a18e5e111b5eaab095312d7fe84/e4f2c8b4d0b254fe8e04880ff76d872e.png
+                        balance: 3.4696587206479417
+                        marketValue: 9262.209686101702
+                        value:
+                          price: 2669.4872412039504
+                borrow: []
+                rewards: []
+                rewardsMarketValue: 0
+              - name: ether.fi
+                protocolType: Staked
+                protocolId: etherfi
+                description: No description
+                siteUrl: https://www.ether.fi/
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/etherfi/6c3ea6e8f02322fa9b417e0726978c41.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 669.5763566790667
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/etherfi/0x0000000000000000000000000000000000000000
+                    object: Asset
+                    name: ETH
+                    address: '0x0000000000000000000000000000000000000000'
+                    symbol: ETH
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                    balance: 0.25077672243889226
+                    marketValue: 669.5763566790667
+                    underlying:
+                      - object: Asset
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 0.25077672243889226
+                        marketValue: 669.5763566790667
+                        value:
+                          price: 2670.01
+                rewards: []
+                rewardsMarketValue: 0
+              - name: LIDO
+                protocolType: Staked
+                protocolId: lido
+                description: No description
+                siteUrl: https://stake.lido.fi
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/lido/081388ebc44fa042561749bd5338d49e.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 3310.710222390042
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/lido/0x0000000000000000000000000000000000000000
+                    object: Asset
+                    name: ETH
+                    address: '0x0000000000000000000000000000000000000000'
+                    symbol: ETH
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                    balance: 1.2399617313755535
+                    marketValue: 3310.710222390042
+                    underlying:
+                      - object: Asset
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 1.2399617313755535
+                        marketValue: 3310.710222390042
+                        value:
+                          price: 2670.01
+                rewards: []
+                rewardsMarketValue: 0
+              - name: LIDO
+                protocolType: Staked
+                protocolId: lido
+                description: No description
+                siteUrl: https://stake.lido.fi
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/lido/081388ebc44fa042561749bd5338d49e.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 1
+                supplyMarketValue: 2.6700100000000006e-15
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/1/lido/0x0000000000000000000000000000000000000000
+                    object: Asset
+                    name: ETH
+                    address: '0x0000000000000000000000000000000000000000'
+                    symbol: ETH
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                    balance: 1.e-18
+                    marketValue: 2.6700100000000006e-15
+                    underlying:
+                      - object: Asset
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 1.e-18
+                        marketValue: 2.6700100000000006e-15
+                        value:
+                          price: 2670.01
+                rewards: []
+                rewardsMarketValue: 0
+              - name: Beefy
+                protocolType: Liquidity Provision
+                protocolId: linea_beefy
+                description: No description
+                siteUrl: https://app.beefy.com
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/avax_beefy/98a5cc0f4596cbdeb9abe5125ae7e9e7.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 59144
+                supplyMarketValue: 846.7148189659056
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/59144/linea_beefy/0x3d80b49fc4dc9e450efac1bd34cdeb2f303c2e81
+                    object: Asset
+                    name: ETH
+                    address: '0x3d80b49fc4dc9e450efac1bd34cdeb2f303c2e81'
+                    symbol: ETH
+                    marketValue: 846.7148189659056
+                    underlying:
+                      - object: Token
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 0.3170219178108406
+                        marketValue: 846.7148189659056
+                        value:
+                          price: 2670.84
+                borrow: []
+                rewards: []
+                rewardsMarketValue: 0
+              - name: LayerBank
+                protocolType: Locked
+                protocolId: linea_lineabank
+                description: No description
+                siteUrl: https://layerbank.finance/bank
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/linea_lineabank/820dbdac91e7b524de224048e1590607.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 59144
+                supplyMarketValue: 6.22014459425027
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/59144/linea_lineabank/0xb97f21d1f2508ff5c73e7b5af02847640b1ff75d
+                    object: Asset
+                    name: LineaBank Token
+                    address: '0xb97f21d1f2508ff5c73e7b5af02847640b1ff75d'
+                    symbol: LAB
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/project/logo_url/linea_lineabank/d5325b9399421f44394632a6cc43c064.png
+                    balance: 179.97577536611178
+                    marketValue: 6.22014459425027
+                    underlying:
+                      - object: Asset
+                        name: LineaBank Token
+                        address: '0xb97f21d1f2508ff5c73e7b5af02847640b1ff75d'
+                        symbol: LAB
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/project/logo_url/linea_lineabank/d5325b9399421f44394632a6cc43c064.png
+                        balance: 179.97577536611178
+                        marketValue: 6.22014459425027
+                        value:
+                          price: 0.034561010122596096
+                rewardsMarketValue: 0
+              - name: Mendi Finance
+                protocolType: Lending & Borrowing
+                protocolId: linea_mendi
+                description: No description
+                siteUrl: https://mendi.finance/
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/linea_mendi/45bef14f0dd20c121236ae8cfbc5978c.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 59144
+                supplyMarketValue: 993.0764156393867
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/59144/linea_mendi/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f
+                    object: Asset
+                    name: Wrapped Ether
+                    address: '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f'
+                    symbol: WETH
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/linea_token/logo_url/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f/61844453e63cf81301f845d7864236f6.png
+                    balance: 0.37182175481847907
+                    marketValue: 993.0764156393867
+                    underlying:
+                      - object: Asset
+                        name: Wrapped Ether
+                        address: '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f'
+                        symbol: WETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/linea_token/logo_url/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f/61844453e63cf81301f845d7864236f6.png
+                        balance: 0.37182175481847907
+                        marketValue: 993.0764156393867
+                        value:
+                          price: 2670.84
+                borrow: []
+              - name: Stargate
+                protocolType: Liquidity Provision
+                protocolId: linea_stargate
+                description: No description
+                siteUrl: https://stargate.finance
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/stargate/3c6fbbbb1e62793ee34effb91d8769e7.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 59144
+                supplyMarketValue: 393.681816
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/59144/linea_stargate/0x23a46efda973bd4e97ee84bac87018537538d078
+                    object: Asset
+                    name: ETH
+                    address: '0x23a46efda973bd4e97ee84bac87018537538d078'
+                    symbol: ETH
+                    marketValue: 393.681816
+                    underlying:
+                      - object: Token
+                        name: ETH
+                        address: '0x0000000000000000000000000000000000000000'
+                        symbol: ETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/coin/logo_url/eth/6443cdccced33e204d90cb723c632917.png
+                        balance: 0.1474
+                        marketValue: 393.681816
+                        value:
+                          price: 2670.84
+                borrow: []
+                rewards: []
+                rewardsMarketValue: 0
+              - name: ZeroLend
+                protocolType: Lending & Borrowing
+                protocolId: linea_zerolend
+                description: No description
+                siteUrl: https://app.zerolend.xyz/
+                iconUrl: >-
+                  https://static.debank.com/image/project/logo_url/era_zerolend/07108de6715a69534dc5b41565885d5d.png
+                accountAddress: '0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f'
+                chainId: 59144
+                supplyMarketValue: 1074.9338217244629
+                borrowMarketValue: 0
+                supply:
+                  - id: >-
+                      0x3130D2b8cbf0798bb1cBf2a4F527dBaE953FF27f/59144/linea_zerolend/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f
+                    object: Asset
+                    name: Wrapped Ether
+                    address: '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f'
+                    symbol: WETH
+                    decimals: 18
+                    iconUrl: >-
+                      https://static.debank.com/image/linea_token/logo_url/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f/61844453e63cf81301f845d7864236f6.png
+                    balance: 0.4024703171004114
+                    marketValue: 1074.9338217244629
+                    underlying:
+                      - object: Asset
+                        name: Wrapped Ether
+                        address: '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f'
+                        symbol: WETH
+                        decimals: 18
+                        iconUrl: >-
+                          https://static.debank.com/image/linea_token/logo_url/0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f/61844453e63cf81301f845d7864236f6.png
+                        balance: 0.4024703171004114
+                        marketValue: 1074.9338217244629
+                        value:
+                          price: 2670.84
+                borrow: []
+          nftCollections:
+            - id: >-
+                0xabef19a5Cb082D0e512eB28363B1229B25BaB9a7/42161/0x22799DAA45209338B7f938edf251bdfD1E6dCB32/10484
+              symbol: GOEFS
+              address: '0x22799DAA45209338B7f938edf251bdfD1E6dCB32'
+              tokenId: '10484'
+              metadata:
+                name: 'General Open-end Fund Share #10484'
+                slot: >-
+                  5310353805259224968786693768403624884928279211848504288200646724372830798580
+                image: >-
+                  data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIHJ4PSIyMCIgZmlsbD0id2hpdGUiIC8+PHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI1OTkiIGhlaWdodD0iMzk5IiByeD0iMjAiIHN0cm9rZT0iI0Y5RjlGOSIgLz48bWFzayBpZD0ibV8zNTI1XzEiIHN0eWxlPSJtYXNrLXR5cGU6YWxwaGEiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjMwMCIgeT0iMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSI0MDAiPjxwYXRoIGQ9Ik0zMDAgMEg1ODBDNTkwIDAgNjAwIDggNjAwIDIwVjM4MEM2MDAgMzkyIDU5MCA0MDAgNTgwIDQwMEgzMDBWMFoiIGZpbGw9IndoaXRlIiAvPjwvbWFzaz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBfMzUyNV8xIiB4MT0iNDEwIiB5MT0iNDAiIHgyPSIzNjAiIHkyPSIxNDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNTk0MERBIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0I4NkNGMiIgLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0icF8zNTI1XzIiIHgxPSI1ODUiIHkxPSIxMjUiIHgyPSI0NjAiIHkyPSItMTQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNTk0MERBIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0I4NkNGMiIgLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0icF8zNTI1XzMiIHgxPSIzMTUiIHkxPSIyMDAiIHgyPSI0NDAiIHkyPSI2NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJwXzM1MjVfNCIgeDE9IjQ5MCIgeTE9IjEyMCIgeDI9IjU0MCIgeTI9IjIyMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJwXzM1MjVfNSIgeDE9IjQxMCIgeTE9IjE5NSIgeDI9IjM2MCIgeTI9IjMwMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJwXzM1MjVfNiIgeDE9IjU4NSIgeTE9IjI4MCIgeDI9IjQ2MCIgeTI9IjE0MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJwXzM1MjVfNyIgeDE9IjMxNSIgeTE9IjM2MCIgeDI9IjQ0MCIgeTI9IjIyMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJwXzM1MjVfOCIgeDE9IjQ5MCIgeTE9IjI3MCIgeDI9IjU0MCIgeTI9IjM3NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM1OTQwREEiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQjg2Q0YyIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG1hc2s9InVybCgjbV8zNTI1XzEpIj48cmVjdCB4PSIzMDAiIHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjNDEzMjhFIiAvPjxjaXJjbGUgY3g9IjM2NyIgY3k9IjgzIiByPSIzNSIgZmlsbD0idXJsKCNwXzM1MjVfMSkiPjwvY2lyY2xlPjxwYXRoIGQ9Ik00NDQgNDhBMzUgMzUgMCAwIDAgNDQ0IDExOEg1MzNBIDM1IDM1IDAgMCAwIDUzMyA0OFoiIGZpbGw9InVybCgjcF8zNTI1XzIpIiAvPjxwYXRoIGQ9Ik0zNjcgMTI2QTM1IDM1IDAgMCAwIDM2NyAxOTZINDU2QSAzNSAzNSAwIDAgMCA0NTYgMTI2WiIgZmlsbD0idXJsKCNwXzM1MjVfMykiIC8+PGNpcmNsZSBjeD0iNTMzIiBjeT0iMTYxIiByPSIzNSIgZmlsbD0idXJsKCNwXzM1MjVfNCkiPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjM2NyIgY3k9IjIzOSIgcj0iMzUiIGZpbGw9InVybCgjcF8zNTI1XzUpIj48L2NpcmNsZT48cGF0aCBkPSJNNDQ0IDIwNEEzNSAzNSAwIDAgMCA0NDQgMjc0SDUzM0EgMzUgMzUgMCAwIDAgNTMzIDIwNFoiIGZpbGw9InVybCgjcF8zNTI1XzYpIiAvPjxwYXRoIGQ9Ik0zNjcgMjgyQTM1IDM1IDAgMCAwIDM2NyAzNTJINDU2QSAzNSAzNSAwIDAgMCA0NTYgMjgyWiIgZmlsbD0idXJsKCNwXzM1MjVfNykiIC8+PGNpcmNsZSBjeD0iNTMzIiBjeT0iMzE3IiByPSIzNSIgZmlsbD0idXJsKCNwXzM1MjVfOCkiPjwvY2lyY2xlPjwvZz48dGV4dCBmaWxsPSIjMjAyMDIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiPjx0c3BhbiB4PSIyNiIgeT0iNjEiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5BTU9VTlQ8L3RzcGFuPjx0c3BhbiB4PSIyNiIgeT0iMTA4IiBmb250LXNpemU9IjM4IiBmb250LXdlaWdodD0iYm9sZCI+MC40MzM4NjM8L3RzcGFuPjx0c3BhbiB4PSIyNiIgeT0iMTQzIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzQxMzI4RSI+R2VuZXJhbCBPcGVuLWVuZCBGdW5kIFNoYXJlPC90c3Bhbj48dHNwYW4geD0iMjYiIHk9IjE2MiI+IzEwNDg0PC90c3Bhbj48dHNwYW4geD0iMjYiIHk9IjMwMCI+RVNULiBWQUxVRTwvdHNwYW4+PHRzcGFuIHg9IjI2IiB5PSIzMjAiPk5BViBEQVRFPC90c3Bhbj48dHNwYW4geD0iMjUwIiB5PSIzMDAiIHRleHQtYW5jaG9yPSJlbmQiPjAuNDk5OTk5IFVTREM8L3RzcGFuPjx0c3BhbiB4PSIyNTAiIHk9IjMyMCIgdGV4dC1hbmNob3I9ImVuZCI+MjAyNC8wOC8xOTwvdHNwYW4+PHRzcGFuIHg9IjI2IiB5PSIzNjQiIGZvbnQtc2l6ZT0iNyI+SXNzdWVyOiAweGFmNDBlNTYyNWVjMmRiYmIzZDI2NTBhZmZhZTQ1NzE0OTgyOTdlZDI8L3RzcGFuPjx0c3BhbiB4PSIyNiIgeT0iMzc2IiBmb250LXNpemU9IjciPlVwZGF0ZWQ6IDIwMjQvMDgvMjEgMDk6MTQ6MjY8L3RzcGFuPjx0c3BhbiB4PSI0OTgiIHk9IjM3NiIgZm9udC1zaXplPSI3IiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjYiPlBvd2VyZWQgYnkgU29sdiBQcm90b2NvbDwvdHNwYW4+PC90ZXh0Pjwvc3ZnPg==
+                balance: '433863948942890488'
+                properties:
+                  issuer: '0xaf40e5625ec2dbbb3d2650affae4571498297ed2'
+                  currency: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+                  supervisor: '0x3eebfac5b51ff51c82f0856dad42750d581d7483'
+                description: ''
+              attribution:
+                oat:
+                  usd: 'null'
+                  value: 0
+              transaction:
+                usd: 'null'
+                value: 0
+                amount: 1
+                symbol: ETH
+          stakingPositions:
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators: []
+              totalFeesEth: 0
+              netRewardsEth: 0
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 0
+              amountStakedEth: 0
+              grossRewardsEth: 0
+              stakingProvider:
+                name: allnodes
+                health: 1
+                baseUrl: https://mmi-api.allnodes.com/api/v1/mmi/holesky
+                chainId: 17000
+                details:
+                  id: Allnodes
+                  tvl: 1066259.28251507
+                  fees: 10
+                  idType: nodeOperator
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 10
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 10
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 10
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 10
+                    - lowerBound: 60000
+                      upperBound: 100000
+                      valuePercent: 10
+                  avgUptime: 0.9971823595976346
+                  updatedAt: '2024-08-27T09:48:50.344Z'
+                  timeWindow: all
+                  displayName: Allnodes
+                  operatorTags:
+                    - name: operator
+                      path: 'null'
+                      idType: 'null'
+                  aprPercentage: 1.99
+                  avgCorrectness: 0.9648026475245122
+                  validatorCount: 1000
+                  avgInclusionDelay: 1.2162704492096998
+                  clientPercentages:
+                    - client: Teku
+                      percentage: 1
+                  nodeOperatorCount: 1
+                  networkPenetration: 0.0005397149641453901
+                  relayerPercentages:
+                    - relayer: flashbots
+                      percentage: 0.03727714748784441
+                    - relayer: titan
+                      percentage: 0.005672609400324149
+                    - relayer: no_mev_boost
+                      percentage: 0.9570502431118314
+                  avgValidatorEffectiveness: 79.97909388921754
+                clientId: Lg4rrZFIwPIDD5ee4X0ebSRijdX2rAj3
+                displayName: Allnodes
+                isMultiCloud: true
+                certification: ''
+                isMultiClient: false
+                isMultiRegion: true
+                ratedOperatorId: Allnodes
+                withdrawStrategy: connector
+              participationRate: 0
+              slashingPenalties: 0
+              currentFeeTierPercent: 10
+              effectivenessRatingPercent: 0
+              currentNetRewardsRatePercent: 0
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators: []
+              totalFeesEth: 0
+              netRewardsEth: 0
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 0
+              amountStakedEth: 0
+              grossRewardsEth: 0
+              stakingProvider:
+                name: blockdaemon
+                health: 1
+                baseUrl: https://svc.blockdaemon.com/mmi-connector/holesky
+                chainId: 17000
+                details:
+                  id: Blockdaemon
+                  tvl: 755248
+                  fees: 7
+                  idType: nodeOperator
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 7
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 7
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 7
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 7
+                    - lowerBound: 60000
+                      upperBound: 'null'
+                      valuePercent: 7
+                  avgUptime: 0.9993517237973043
+                  updatedAt: '2024-08-27T09:48:50.736Z'
+                  timeWindow: all
+                  displayName: Blockdaemon
+                  operatorTags: []
+                  aprPercentage: 1.99
+                  avgCorrectness: 0.9599179067505043
+                  validatorCount: 1810
+                  avgInclusionDelay: 1.2302674610438933
+                  clientPercentages:
+                    - client: Prysm
+                      percentage: 1
+                  nodeOperatorCount: 1
+                  networkPenetration: 0.0010723206203108189
+                  relayerPercentages:
+                    - relayer: no_mev_boost
+                      percentage: 0.4110169491525424
+                    - relayer: flashbots
+                      percentage: 0.5889830508474576
+                  avgValidatorEffectiveness: 76.52760540033782
+                clientId: pnc7ePFQVYlv4cL6TxMkyLBieXXVytNy
+                displayName: Blockdaemon
+                isMultiCloud: true
+                certification: ISO 27001
+                isMultiClient: true
+                isMultiRegion: true
+                ratedOperatorId: Blockdaemon
+                withdrawStrategy: connector
+              participationRate: 0
+              slashingPenalties: 0
+              currentFeeTierPercent: 7
+              effectivenessRatingPercent: 0
+              currentNetRewardsRatePercent: 0
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators:
+                - index: 3
+                  pubKey: >-
+                    0xa1eea60a34ac0e29a85f57f425c3314c9b3ebc68435aec8c1038cb3f6f6d692a61f4e9971c13df98dbae80199300944c
+                  status: active_ongoing
+                  depositor: '0xca8f1F0245530118D0cf14a06b01Daf8f76Cf281'
+                  feesSspEth: 0.00011115272
+                  feeRecipient: '0xca8f1F0245530118D0cf14a06b01Daf8f76Cf281'
+                  netRewardsEth: 0.0012782562800000001
+                  amountStakedEth: 32
+                  grossRewardsEth: 0.001389409
+                  transactionHash: >-
+                    0x2626d8e708a8dedd9ac2125b4e86f30cf25f7210c2b2733673128a08bb631901
+                  participationRate: 1
+                  slashingPenalties: 0
+                  estimatedActiveDate: 'null'
+                  stakingProviderName: consensys-staking
+                  estimatedWithdrawnDate: 'null'
+                  effectivenessRatingPercent: 'null'
+                  currentNetRewardsRatePercent: 1.4580110693750001
+                - index: 1
+                  pubKey: >-
+                    0xa217812945d65969fd9f2b52e0586bd0a724cadad6d6e41e295920105700395554d63e33dec2db4f3335da1b3d5ec40b
+                  status: active_ongoing
+                  depositor: 'null'
+                  feesSspEth: 0.00011030216000000001
+                  feeRecipient: '0xca8f1F0245530118D0cf14a06b01Daf8f76Cf281'
+                  netRewardsEth: 0.00126847484
+                  amountStakedEth: 32
+                  grossRewardsEth: 0.001378777
+                  transactionHash: 'null'
+                  participationRate: 1
+                  slashingPenalties: 0
+                  estimatedActiveDate: 'null'
+                  stakingProviderName: consensys-staking
+                  estimatedWithdrawnDate: 'null'
+                  effectivenessRatingPercent: 'null'
+                  currentNetRewardsRatePercent: 1.446854114375
+                - index: 2
+                  pubKey: >-
+                    0x930263991093d365147a915a9eb574c122ee10b12ce2f07b307cafffce11ff030259b9567bc967f028de81cd4996ad4d
+                  status: active_ongoing
+                  depositor: 'null'
+                  feesSspEth: 0.0001381841
+                  feeRecipient: '0xca8f1F0245530118D0cf14a06b01Daf8f76Cf281'
+                  netRewardsEth: 0.0012436569
+                  amountStakedEth: 32
+                  grossRewardsEth: 0.001381841
+                  transactionHash: 'null'
+                  participationRate: 1
+                  slashingPenalties: 0
+                  estimatedActiveDate: 'null'
+                  stakingProviderName: consensys-staking
+                  estimatedWithdrawnDate: 'null'
+                  effectivenessRatingPercent: 'null'
+                  currentNetRewardsRatePercent: 1.4185461515625
+              totalFeesEth: 0.00035963898
+              netRewardsEth: 0.0037903880200000004
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 96.004150027
+              amountStakedEth: 96
+              grossRewardsEth: 0.004150027000000001
+              stakingProvider:
+                name: consensys-staking
+                health: 1
+                baseUrl: https://consensys-connector.dev.metamask-institutional.io
+                chainId: 17000
+                details:
+                  id: Consensys - Lido
+                  tvl: 950000
+                  idType: poolShare
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 8
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 7
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 6
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 5
+                    - lowerBound: 60000
+                      upperBound: 'null'
+                      valuePercent: 5
+                  avgUptime: 0.8867865344755635
+                  updatedAt: '2024-08-27T09:48:50.317Z'
+                  timeWindow: all
+                  displayName: Consensys
+                  operatorTags:
+                    - name: operator
+                      path: /o/Consensys
+                      idType: nodeOperator
+                    - name: Lido
+                      path: /o/Lido
+                      idType: pool
+                  aprPercentage: 1.75
+                  avgCorrectness: 0.9570309638921528
+                  validatorCount: 500
+                  avgInclusionDelay: 1.24357952471784
+                  clientPercentages:
+                    - client: Teku
+                      percentage: 0.42028985507246375
+                    - client: Lighthouse
+                      percentage: 0.5797101449275363
+                  nodeOperatorCount: 'null'
+                  networkPenetration: 0.00012974487063429247
+                  relayerPercentages:
+                    - relayer: titan
+                      percentage: 0.1611842105263158
+                    - relayer: flashbots
+                      percentage: 0.34210526315789475
+                    - relayer: no_mev_boost
+                      percentage: 0.4967105263157895
+                  avgValidatorEffectiveness: 68.22634812464489
+                clientId: 0C4HsSVySQ5SA9sYxiyTn7iW9JQqWYGx
+                displayName: ConsenSys
+                isMultiCloud: true
+                certification: SOC 2 Type 2
+                isMultiClient: true
+                isMultiRegion: true
+                ratedOperatorId: Consensys - Lido
+                withdrawStrategy: connector
+              participationRate: 1
+              slashingPenalties: 0
+              currentFeeTierPercent: 8
+              effectivenessRatingPercent: 'null'
+              currentNetRewardsRatePercent: 1.4411371117708331
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators: []
+              totalFeesEth: 0
+              netRewardsEth: 0
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 0
+              amountStakedEth: 0
+              grossRewardsEth: 0
+              stakingProvider:
+                name: figment
+                health: 1
+                baseUrl: https://mmi-dev.api.figment.io
+                chainId: 17000
+                details:
+                  id: Figment
+                  tvl: 1284796.422978871
+                  idType: nodeOperator
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 7
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 7
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 6
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 5
+                    - lowerBound: 60000
+                      upperBound: 'null'
+                      valuePercent: 5
+                  avgUptime: 0.9961214147833736
+                  updatedAt: '2024-08-27T09:48:50.655Z'
+                  timeWindow: all
+                  displayName: Figment
+                  operatorTags: []
+                  aprPercentage: 1.96
+                  avgCorrectness: 0.9598952551403432
+                  validatorCount: 500
+                  avgInclusionDelay: 1.2437056680505874
+                  clientPercentages:
+                    - client: Lighthouse
+                      percentage: 1
+                  nodeOperatorCount: 1
+                  networkPenetration: 0.00029325895417340074
+                  relayerPercentages:
+                    - relayer: flashbots
+                      percentage: 0.3428030303030303
+                    - relayer: no_mev_boost
+                      percentage: 0.6571969696969697
+                  avgValidatorEffectiveness: 78.09191675194592
+                clientId: dXnZSo99eVEdovz2I6XDBy3B683BbG0v
+                displayName: Figment
+                isMultiCloud: true
+                certification: ISO 27001 | Soc 2 Type 1
+                isMultiClient: true
+                isMultiRegion: true
+                ratedOperatorId: Figment
+                withdrawStrategy: connector
+              participationRate: 0
+              slashingPenalties: 0
+              currentFeeTierPercent: 7
+              effectivenessRatingPercent: 0
+              currentNetRewardsRatePercent: 0
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators:
+                - index: 1
+                  pubKey: >-
+                    0xaef2a56a6c6bfa38ecf615265ff95c23bcdbf0599d0a64b386917b204d63cc2093fb88b71e36a781764b47d0a0003054
+                  status: active_ongoing
+                  depositor: 'null'
+                  feesSspEth: -0.000052915600000000005
+                  feeRecipient: '0xca8f1f0245530118d0cf14a06b01daf8f76cf281'
+                  netRewardsEth: -0.0010053964000000001
+                  amountStakedEth: 32
+                  grossRewardsEth: -0.001058312
+                  transactionHash: 'null'
+                  participationRate: 0.07111111111111111
+                  slashingPenalties: 0
+                  estimatedActiveDate: 'null'
+                  stakingProviderName: kiln
+                  estimatedWithdrawnDate: 'null'
+                  effectivenessRatingPercent: 'null'
+                  currentNetRewardsRatePercent: -1.1467802687500002
+              totalFeesEth: -0.000052915600000000005
+              netRewardsEth: -0.0010053964000000001
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 31.998941688
+              amountStakedEth: 32
+              grossRewardsEth: -0.001058312
+              stakingProvider:
+                name: kiln
+                health: 1
+                baseUrl: https://mmi-api.testnet.kiln.fi
+                chainId: 17000
+                details:
+                  id: Kiln
+                  tvl: 36954.995937864
+                  fees: 5
+                  idType: nodeOperator
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 5
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 5
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 5
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 5
+                    - lowerBound: 60000
+                      upperBound: 'null'
+                      valuePercent: 5
+                  avgUptime: 0.9224216567660312
+                  updatedAt: '2024-08-27T09:48:50.333Z'
+                  timeWindow: all
+                  displayName: Kiln
+                  operatorTags:
+                    - name: operator
+                      path: 'null'
+                      idType: 'null'
+                  aprPercentage: 1.8
+                  avgCorrectness: 0.9628329916806081
+                  validatorCount: 100453
+                  avgInclusionDelay: 1.2535799271653745
+                  clientPercentages:
+                    - client: Teku
+                      percentage: 0.3132075471698113
+                    - client: Prysm
+                      percentage: 0.3255157820490213
+                    - client: Lighthouse
+                      percentage: 0.3612766707811673
+                  nodeOperatorCount: 2
+                  networkPenetration: 0.05951260954258712
+                  relayerPercentages:
+                    - relayer: flashbots
+                      percentage: 0.08599318472241943
+                    - relayer: titan
+                      percentage: 0.06899048700837711
+                    - relayer: no_mev_boost
+                      percentage: 0.8450163282692035
+                  avgValidatorEffectiveness: 72.38585142369638
+                clientId: iXskNmrOWVSLW1pgQsVYgeUyWa74BmaZ
+                displayName: Kiln
+                isMultiCloud: false
+                certification: SOC 2 Type 2
+                isMultiClient: true
+                isMultiRegion: false
+                ratedOperatorId: Kiln
+                withdrawStrategy: transaction
+              participationRate: 0.07111111111111111
+              slashingPenalties: 0
+              currentFeeTierPercent: 5
+              effectivenessRatingPercent: 'null'
+              currentNetRewardsRatePercent: -1.1467802687500002
+            - orgId: org_C7B4TjkcsqmZ9VDj
+              validators: []
+              totalFeesEth: 0
+              netRewardsEth: 0
+              ethPriceDollar: 2683.0801154902983
+              marketValueEth: 0
+              amountStakedEth: 0
+              grossRewardsEth: 0
+              stakingProvider:
+                name: mock
+                health: 1
+                baseUrl: https://mock-connector.dev.metamask-institutional.io
+                chainId: 17000
+                details:
+                  id: Consensys - Lido
+                  tvl: 9999998
+                  fees: 9.999
+                  idType: poolShare
+                  feeTiers:
+                    - lowerBound: 0
+                      upperBound: 4999
+                      valuePercent: 9.999
+                    - lowerBound: 5000
+                      upperBound: 14999
+                      valuePercent: 8.888
+                    - lowerBound: 15000
+                      upperBound: 29999
+                      valuePercent: 7.777
+                    - lowerBound: 30000
+                      upperBound: 59999
+                      valuePercent: 6.666
+                    - lowerBound: 60000
+                      upperBound: 'null'
+                      valuePercent: 5.555
+                  avgUptime: 0.8867865344755635
+                  updatedAt: '2024-08-27T09:48:50.310Z'
+                  timeWindow: all
+                  displayName: Consensys
+                  operatorTags:
+                    - name: operator
+                      path: /o/Consensys
+                      idType: nodeOperator
+                    - name: Lido
+                      path: /o/Lido
+                      idType: pool
+                  aprPercentage: 1.75
+                  avgCorrectness: 0.9570309638921528
+                  validatorCount: 500
+                  avgInclusionDelay: 1.24357952471784
+                  clientPercentages:
+                    - client: Teku
+                      percentage: 0.42028985507246375
+                    - client: Lighthouse
+                      percentage: 0.5797101449275363
+                  nodeOperatorCount: 'null'
+                  networkPenetration: 0.00012974487063429247
+                  relayerPercentages:
+                    - relayer: titan
+                      percentage: 0.1611842105263158
+                    - relayer: flashbots
+                      percentage: 0.34210526315789475
+                    - relayer: no_mev_boost
+                      percentage: 0.4967105263157895
+                  avgValidatorEffectiveness: 68.22634812464489
+                clientId: 0C4HsSVySQ5SA9sYxiyTn7iW9JQqWYGx
+                displayName: Acme Inc.
+                isMultiCloud: false
+                certification: ''
+                isMultiClient: false
+                isMultiRegion: false
+                ratedOperatorId: Consensys - Lido
+                withdrawStrategy: connector
+              participationRate: 0
+              slashingPenalties: 0
+              currentFeeTierPercent: 9.999
+              effectivenessRatingPercent: 0
+              currentNetRewardsRatePercent: 0
+          cefiBalances:
+            - name: Bifrost Bridged MATIC (Bifrost)
+              value:
+                price: 0.5051
+              object: token
+              symbol: MATIC
+              address: bifrost-bridged-matic-bifrost
+              balance: '0.06555068'
+              iconUrl: https://images-currency.meld.io/crypto/MATIC/symbol.png
+              namespace: binanceInternational
+              accountAddress: 999f3391-412c-4dec-adb4-832e779afe81
+            - name: Reef
+              value:
+                price: 0.000674513115647349
+              object: token
+              symbol: REEF
+              address: reef
+              balance: '0.141'
+              iconUrl: https://images-currency.meld.io/crypto/REEF/symbol.png
+              namespace: binanceInternational
+              accountAddress: 999f3391-412c-4dec-adb4-832e779afe81
+            - name: EthereumPoW
+              value:
+                price: 2.0463
+              object: token
+              symbol: ETHW
+              address: ethereum-pow-iou
+              balance: '0.00000979'
+              iconUrl: https://images-currency.meld.io/crypto/ETHW/symbol.png
+              namespace: binanceInternational
+              accountAddress: 999f3391-412c-4dec-adb4-832e779afe81
+            - name: Celestia
+              value:
+                price: 5.33470409349237
+              object: token
+              symbol: TIA
+              address: celestia
+              balance: '0.00955587'
+              iconUrl: https://images-currency.meld.io/crypto/TIA/symbol.png
+              namespace: binanceInternational
+              accountAddress: 999f3391-412c-4dec-adb4-832e779afe81
+    HealthCheckItem:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+            - get
+            - GET
+            - post
+            - POST
+            - put
+            - PUT
+            - delete
+            - DELETE
+            - patch
+            - PATCH
+          description: The HTTP method/verb of the endpoint.
+        path:
+          type: string
+          description: The path of the endpoint.
+          example: /account/addresses
+        status:
+          type: string
+          enum:
+            - ok
+            - error
+          description: The overall status of the Health Check.
+        error:
+          type: object
+          description: >-
+            The error object contains information of each health indicator which
+            is of status "down".
+      required:
+        - method
+        - path
+        - status
+        - error
+    IgnoreCache:
+      type: object
+      properties:
+        ignoreCache:
+          type: boolean
+          default: false
+          description: >-
+            Optionally set this flag to `true` to insistently retrieve the most
+            recent data instead of cached data.
+    PaginatedSnapshotsDto:
+      type: object
+      properties:
+        meta:
+          description: Metadata about the current page.
+          allOf:
+            - type: object
+              properties:
+                totalItems:
+                  type: number
+                  description: Total number of results.
+                  example: 1000
+                itemsPerPage:
+                  type: number
+                  description: The number of results per page.
+                  example: 50
+                totalPages:
+                  type: number
+                  description: Total number of pages.
+                  example: 20
+                currentPage:
+                  type: number
+                  description: Index of the current page.
+                  example: 1
+              required:
+                - totalItems
+                - itemsPerPage
+                - totalPages
+                - currentPage
+        items:
+          description: The array of snapshot IDs for the current page.
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: String identifying uniquely the resource.
+              createdAt:
+                format: date-time
+                type: string
+                description: Date when the resource was created.
+              updatedAt:
+                format: date-time
+                type: string
+                description: Date when the resource was last updated.
+              customerId:
+                type: string
+                description: >-
+                  String identifying uniquely the customer to whom the snapshot
+                  belongs.
+                example: org_XYZ
+              stakingSnapshotItem:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: String identifying uniquely the resource.
+                  createdAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was created.
+                  updatedAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was last updated.
+                required:
+                  - id
+                  - createdAt
+                  - updatedAt
+              adaptersDeFiPositionItems:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: String identifying uniquely the resource.
+                  createdAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was created.
+                  updatedAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was last updated.
+                required:
+                  - id
+                  - createdAt
+                  - updatedAt
+              cefiSnapshotItems:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: String identifying uniquely the resource.
+                  createdAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was created.
+                  updatedAt:
+                    format: date-time
+                    type: string
+                    description: Date when the resource was last updated.
+                required:
+                  - id
+                  - createdAt
+                  - updatedAt
+              creationMode:
+                type: string
+                description: >-
+                  Whether the snapshot was taken automatically, or triggered
+                  manually.
+                enum:
+                  - manual
+                  - automatic
+                example: manual
+            required:
+              - id
+              - createdAt
+              - updatedAt
+              - customerId
+              - creationMode
+      required:
+        - meta
+        - items
+    PaginatedTransfersDto:
+      type: object
+      properties:
+        meta:
+          description: Metadata about the current page.
+          allOf:
+            - type: object
+              properties:
+                totalItems:
+                  type: number
+                  description: Total number of items that match the search query.
+                  example: 1000
+                itemsPerPage:
+                  type: number
+                  description: The number of results per page.
+                  example: 50
+                totalPages:
+                  type: number
+                  description: Total number of pages.
+                  example: 20
+                currentPage:
+                  type: number
+                  description: Index of the current page.
+                  example: 1
+              required:
+                - totalItems
+                - itemsPerPage
+                - totalPages
+                - currentPage
+        items:
+          description: The array of items for the current page.
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferDto'
+      required:
+        - meta
+        - items
+    PostCustomerSnapshotDto:
+      type: object
+      properties:
+        addresses:
+          description: >-
+            An optional array of Blockchain addresses. Limits the scope of the
+            snapshot to this list of addresses, instead of all the addresses
+            saved in the customer's account. When empty, defaults to all the
+            addresses saved in the customer's account. Every address must be
+            part of the addresses saved in the customer's account. Every address
+            must be valid for one of EVM,Solana,Bitcoin.
+          example:
+            - '0xC71E8d9c352512540A94a0b85582a96f82aC7b4e'
+            - 8ye1k4uMM5NDAAK6ntpe37BSTvNWRdsfbJTMz1GmSPF9
+          type: array
+          items:
+            type: string
+    PostCustomerSnapshotResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: >-
+            The unique identifier of the snapshot, once it will be created. This
+            ID can be used to track the status of the snapshot creation process.
+          example: 94b2a0cf-5bb2-4bfd-8bc3-9aa48bbfa4ec
+      required:
+        - id
+    SearchTransactionsBodyDto:
+      type: object
+      properties:
+        from:
+          example:
+            - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
+          description: Source addresses
+          type: array
+          items:
+            type: string
+        to:
+          example:
+            - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
+          description: Destination addresses
+          type: array
+          items:
+            type: string
+        chainIds:
+          example:
+            - 1
+            - 5
+            - 137
+          description: |-
+            List of chain IDs where to search the transactions in. 
+                    Supported chain IDs are:
+                    <ul>
+                        <li>avalanche: <code>43114</code></li><li>arbitrum: <code>42161</code></li><li>aurora: <code>1313161554</code></li><li>bsc: <code>56</code></li><li>celo: <code>42220</code></li><li>cronos: <code>25</code></li><li>fantom: <code>250</code></li><li>ethereum: <code>1</code></li><li>moonbeam: <code>1284</code></li><li>moonriver: <code>1285</code></li><li>optimism: <code>10</code></li><li>polygon: <code>137</code></li><li>linea: <code>59144</code></li><li>base: <code>8453</code></li>
+                    </ul>
+                   
+          type: array
+          items:
+            type: number
+        fromTimestamp:
+          type: string
+          description: >-
+            The start date and time for the range of transactions to retrieve,
+            formatted as an ISO 8601 string.
+          example: '2022-10-25T13:36:45+02:00'
+        toTimestamp:
+          type: string
+          description: >-
+            The end date and time for the range of transactions to retrieve,
+            formatted as an ISO 8601 string.
+          example: '2023-10-26T13:36:45+02:00'
+        assetTypes:
+          type: array
+          example:
+            - token
+            - native
+          description: >-
+            Leave empty to retrieve all types of assets supported by the chain.
+            Or specify the list of desired asset types.
+          items:
+            type: string
+            enum:
+              - native
+              - token
+              - nft
+        contractAddresses:
+          example:
+            - '0xfaff15c6cdaca61a4f87d329689293e07c98f578'
+          description: >-
+            Limit the results to transfers of tokens with contract address in
+            the list.
+          type: array
+          items:
+            type: string
+        tokenIds:
+          example:
+            - '5'
+            - '1245'
+          description: Limit the results to transfers of NFTs token ID in the list.
+          type: array
+          items:
+            type: string
+        transactionHashes:
+          example:
+            - '0xfcae084c1fc34650747e09215095daa1d2c0fb001d065dc27dc3f5cadda2060a'
+            - '0xfe0c49dc665b5bd1ba2d3904f8469ea7eec7647eb07a9e1416fdaba9d46461b9'
+          description: Limit the results to transactions with a hash in the list.
+          type: array
+          items:
+            type: string
+        blockNumbers:
+          example:
+            - 18685487
+            - 3245
+          description: >-
+            Limit the results to transactions included in the defined blocks
+            numbers.
+          type: array
+          items:
+            type: number
+        excludeContracts:
+          example:
+            - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
+          description: Addresses to filter out transactions with matching contractAddress
+          type: array
+          items:
+            type: string
+        hideSpam:
+          type: boolean
+          description: Hide transactions with known spam addresses
+          default: false
+    TransferDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the transaction
+          example: 017f3026f6e79427c81a67e438f5be50c0940e019406cde36f571c3d53f70786
+        chainId:
+          type: number
+          description: Decimal ID of the chain where the transaction happened.
+          example: 1
+        hash:
+          type: string
+          description: Hash of the transaction.
+          example: '0xe3852b9c47f651395d4d6a8f517c6f2f6ecb44445684fc32ef08155bacb62c68'
+        transactionIndex:
+          type: number
+          description: Integer of the transaction index position in the block.
+          example: 14
+        blockNumber:
+          type: number
+          description: Block number where this transaction was in.
+          example: 14732481
+        blockHash:
+          type: string
+          description: Hash of the block where this transaction was in.
+          example: '0x88b44988a25ce40d55c1a621e3ff9c86504fa3878489f4bbd88af8a6c88fe0e6'
+        timestamp:
+          format: date-time
+          type: string
+          description: Unix timestamp in seconds of the block this transaction was in.
+        nonce:
+          type: number
+          description: The number of transactions made by the sender prior to this one.
+          example: 457
+        from:
+          type: string
+          description: Address of the sender.
+          example: '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
+        to:
+          type: string
+          description: Address of the receiver.
+          example: '0x8d203862455269aa79e2d5b7974d0816673f4e2c'
+        value:
+          type: string
+          description: Value transferred in Wei.
+          example: '81689008581039686'
+        gas:
+          type: string
+          description: Gas provided by the sender.
+          example: '31000'
+        gasUsed:
+          type: string
+          description: The amount of gas that was used by this specific transaction.
+          example: '21000'
+        gasPrice:
+          type: string
+          example: '1000000000'
+          description: Gas price provided by the sender in Wei.
+        isError:
+          type: boolean
+          description: Whether it was successfull or rejected/cancelled.
+          example: true
+        input:
+          type: string
+          description: The data send along with the transaction.
+          example: 0x
+        contractAddress:
+          type: string
+          description: Address of the token's contract, in case of a token transfer.
+          example: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+        cumulativeGasUsed:
+          type: string
+          description: >-
+            The total amount of gas used when the transaction was executed in
+            the block. It is cumulative because it includes the gas used by all
+            preceding transactions in the block.
+          example: '1086011'
+        confirmations:
+          type: number
+          description: >-
+            The number of blocks in the blockchain that have been confirmed and
+            added after the block that this transaction is part of. A higher
+            number of confirmations indicates a greater assurance that the
+            transaction is final, as it means more blocks have been added after
+            it.
+          example: 4382
+        methodId:
+          type: string
+          description: >-
+            The contract identifier for the function that was called in this
+            transaction. It is derived from the first 4 bytes of the Keccak
+            (SHA-3) hash of the ASCII form of the function signature.
+          example: '0x095ea7b3'
+        assetType:
+          type: string
+          enum:
+            - native
+            - token
+            - nft
+          description: Type of asset being transacted.
+        notes:
+          type: string
+          description: >-
+            This field contains any additional comments or notes that the user
+            included when signing the transaction through the custodian. It
+            provides context or details about the transaction that may be
+            relevant for record-keeping or auditing purposes.
+          example: Payment for services rendered
+        nativeTokenPriceUsd:
+          type: number
+          description: >-
+            Price in US dollars of the chain's native token at the time of the
+            transaction.
+          example: 1600
+        fee:
+          type: string
+          description: >-
+            Fee in Wei that the transaction cost. Is equal to `gasUsed *
+            gasPrice`.
+          example: '31000000000000'
+        feeUsd:
+          type: string
+          description: >-
+            Fee in US dollars that the transaction cost, using the price in US
+            dollars of the chain's native token at the time of the transaction.
+            Is equal to `gasUsed * gasPrice * nativeTokenPriceUsd`.
+          example: '0.11'
+        category:
+          type: string
+          description: >-
+            Categorizes the type of transaction or operation. The categories
+            cover a wide range of activities in the Ethereum ecosystem,
+            including different types of exchanges (like 0x, 1inch), lending
+            platforms (like Aave, Compound), domain name services (like ENS),
+            and more. Each category represents a specific type of operation or
+            interaction with a specific protocol or service.
+          enum:
+            - 0X_V3_EXCHANGE
+            - 1INCH_EXCHANGE
+            - 1INCH_V3_EXCHANGE
+            - AAVE_BORROW
+            - AAVE_DEPOSIT
+            - AAVE_REPAY
+            - AAVE_WITHDRAW
+            - ARBITRUM_BRIDGE_IN
+            - ARBITRUM_BRIDGE_OUT
+            - BALANCER_CLAIM
+            - BALANCER_DEPOSIT
+            - BALANCER_EXCHANGE
+            - BALANCER_WITHDRAW
+            - COMPOUND_CLAIM
+            - COMPOUND_V2_BORROW
+            - COMPOUND_V2_DEPOSIT
+            - COMPOUND_V2_REPAY
+            - COMPOUND_V2_WITHDRAW
+            - DAPPNODE_CLAIM
+            - DEX_AG_EXCHANGE
+            - ENS_CLAIM
+            - ENS_DOMAIN_REGISTER
+            - ENS_DOMAIN_RENEW
+            - ENS_DOMAIN_RESOLVER_SET
+            - ENS_DOMAIN_TRANSFER
+            - ERC_20_APPROVE
+            - ERC_20_MINT
+            - ERC_20_TRANSFER
+            - ERC_721_APPROVE
+            - ERC_721_MINT
+            - ERC_721_TRANSFER
+            - ETHERMINE_MINING_PAYOUT
+            - FUTURESWAP_GOVERNANCE_VOTE
+            - GITCOIN_CLAIM
+            - GNOSIS_SAFE_APPROVE_TX
+            - GNOSIS_SAFE_WITHDRAW
+            - IDEX_DEPOSIT_ETH
+            - IDEX_DEPOSIT_TOKEN
+            - IDEX_WITHDRAW
+            - KYBER_EXCHANGE
+            - METAMASK_V1_BRIDGE_OUT
+            - METAMASK_V1_EXCHANGE
+            - METAMASK_STAKE_V1
+            - MININGPOOLHUB_MINING_PAYOUT
+            - OPENSEA_CANCEL_ORDER
+            - OPENSEA_EXCHANGE
+            - OPENSEA_REGISTER
+            - PARASWAP_V4_EXCHANGE
+            - POLYGON_BRIDGE_IN
+            - POLYGON_BRIDGE_OUT
+            - POOLTOGETHER_CLAIM
+            - POOLTOGETHER_DEPOSIT
+            - POOLTOGETHER_WITHDRAW
+            - SHAPESHIFT_CLAIM
+            - SPARKPOOL_MINING_PAYOUT
+            - SUSHISWAP_DEPOSIT
+            - SUSHISWAP_EXCHANGE
+            - SUSHISWAP_WITHDRAW
+            - TORNADO_CASH_V1_DEPOSIT
+            - TORNADO_CASH_V1_WITHDRAW
+            - TO_0X_EXCHANGE_PROXY
+            - TO_1INCH_V3_EXCHANGE_PROXY
+            - TO_ARBITRUM_INBOX
+            - TO_ARBITRUM_OUTBOX
+            - TO_BALANCER_DISTRIBUTOR
+            - TO_COMPOUND_COMPTROLLER
+            - TO_DAPPNODE_DISTRIBUTOR
+            - TO_ENS_REGISTRAR
+            - TO_ENS_TOKEN_CONTRACT
+            - TO_FOX_DISTRIBUTOR
+            - TO_FUTURESWAP_GOVERNANCE
+            - TO_GITCOIN_DISTRIBUTOR
+            - TO_METAMASK_BRIDGE_V1
+            - TO_METAMASK_STAKE_V1
+            - TO_METAMASK_V1_ROUTER
+            - TO_OPENSEA_REGISTRY
+            - TO_OPENSEA_ROUTER
+            - TO_PARASWAP_V4_EXCHANGE_PROXY
+            - TO_POLYGON_BRIDGE
+            - TO_POOLTOGETHER_DISTRIBUTOR
+            - TO_SUSHISWAP_ROUTER
+            - TO_UNISWAP_DISTRIBUTOR
+            - TO_UNISWAP_V2_ROUTER
+            - TO_UNISWAP_V3_ROUTER
+            - UNISWAP_CLAIM
+            - UNISWAP_V1_DEPOSIT
+            - UNISWAP_V1_EXCHANGE
+            - UNISWAP_V1_WITHDRAW
+            - UNISWAP_V2_DEPOSIT
+            - UNISWAP_V2_EXCHANGE
+            - UNISWAP_V2_WITHDRAW
+            - UNISWAP_V3_DEPOSIT
+            - UNISWAP_V3_EXCHANGE
+            - UNISWAP_V3_WITHDRAW
+            - WETH_UNWRAP
+            - WETH_WRAP
+        userCategory:
+          type: string
+          example: swap
+        tokenName:
+          type: string
+          description: Name of the token/NFT, in case of a transfer.
+          example: PepeCoin
+        tokenSymbol:
+          type: string
+          description: Symbol of the token/NFT, in case of a transfer.
+          example: PEPE
+        tokenIconUrl:
+          type: string
+          description: URL of the token/NFT icone, in case of a transfer.
+          example: https://s3.metamask-institutional.io/tokens/pepe.png
+        tokenDecimals:
+          type: number
+          description: The number of decimal places that the token can be divided into.
+          example: 18
+        tokenPriceInNativeToken:
+          type: number
+          description: >-
+            The current price of the token in terms of the chain's native token
+            (for instance Ether for Ethereum mainnnet).
+          example: 200
+        tokenPriceUsd:
+          type: number
+          description: The current price of the token in terms of US dollars.
+          example: 0.16
+        nftCollectionName:
+          type: string
+          description: The name of the collection to which the NFT belongs.
+          example: 'The Merge: Regenesis'
+        nftCollectionSymbol:
+          type: string
+          description: The symbol of the collection to which the NFT belongs.
+          example: MERGE
+        nftCollectionIconUrl:
+          type: string
+          description: The URL of the icon or image associated with the NFT collection.
+          example: https://img-hester.xyz/metadata.json
+        nftCollectionTokenId:
+          type: string
+          description: >-
+            The unique identifier of the token within its NFT collection. This
+            ID is unique within the specific collection and is used to reference
+            the individual NFT.
+          example: '1'
+      required:
+        - id
+        - chainId
+        - hash
+        - transactionIndex
+        - blockNumber
+        - blockHash
+        - timestamp
+        - nonce
+        - from
+        - to
+        - value
+        - gas
+        - gasUsed
+        - gasPrice
+        - isError
+        - input
+        - contractAddress
+        - cumulativeGasUsed
+        - confirmations
+        - methodId
+        - assetType
+        - notes
+        - nativeTokenPriceUsd
+        - fee
+        - feeUsd
+        - category
+        - userCategory
+        - tokenName
+        - tokenSymbol
+        - tokenIconUrl
+        - tokenDecimals
+        - tokenPriceInNativeToken
+        - tokenPriceUsd
+        - nftCollectionName
+        - nftCollectionSymbol
+        - nftCollectionIconUrl
+        - nftCollectionTokenId
+    Position:
+      type: object
+      properties:
+        protocolId:
+          type: string
+          description: Identifier of the DeFi protocol.
+          example: aave-v2
+        name:
+          type: string
+          description: Display name of the protocol.
+          example: Aave V2
+        description:
+          type: string
+          description: Brief description of the protocol adapter.
+          example: Aave V2 is a decentralized non-custodial money market protocol.
+        siteUrl:
+          type: string
+          format: uri
+          description: URL of the protocol's website.
+          example: https://aave.com/
+        iconUrl:
+          type: string
+          format: uri
+          description: URL of the protocol's icon.
+          example: https://aave.com/favicon.ico
+        positionType:
+          $ref: '#/components/schemas/PositionType'
+        chainId:
+          type: integer
+          description: Blockchain ID where the protocol operates (e.g., 1, 10, 56).
+          example: 1
+        productId:
+          type: string
+          description: Identifier for the specific product within the protocol.
+          example: aave-v2-product-1
+        success:
+          type: boolean
+          description: Boolean indicating if the query was successful.
+          example: true
+        tokens:
+          type: array
+          description: >-
+            An array of token objects, detailing each token's information like
+            address, name, symbol, balance, and nested token details.
+          items:
+            $ref: '#/components/schemas/Token'
+        error:
+          type: object
+          description: >-
+            Present in the second item if success is false, providing an error
+            message and details.
+      required:
+        - protocolId
+        - name
+        - description
+        - siteUrl
+        - iconUrl
+        - positionType
+        - chainId
+        - productId
+        - success
+        - tokens
+    PositionType:
+      type: string
+      enum:
+        - supply
+        - lend
+        - borrow
+        - stake
+        - reward
+        - fiat-prices
+      example: lend
+      description: |
+        Type of position. It can be one of the following:
+          - `supply`: Liquidity position e.g. a dex pool
+          - `lend`: Providing liquidity to a lending and borrow protocol
+          - `borrow`: Getting a loan from a lending and borrow protocol
+          - `stake`: Staking a token e.g. staking eth or staking an lp token
+          - `reward`: Claimable rewards, these type of positions will be merged with the equivalent lp position
+          - `fiat-prices`: Fiat prices
+    Profit:
+      type: object
+      properties:
+        protocolId:
+          type: string
+          description: Identifier of the DeFi protocol.
+          example: compound
+        name:
+          type: string
+          description: Display name of the protocol.
+          example: Compound
+        description:
+          type: string
+          description: Brief description of the protocol adapter.
+          example: >-
+            Compound is a decentralized, blockchain-based protocol that allows
+            you to lend and borrow cryptocurrencies.
+        siteUrl:
+          type: string
+          format: uri
+          description: URL of the protocol's website.
+          example: https://compound.finance/
+        iconUrl:
+          type: string
+          format: uri
+          description: URL of the protocol's icon.
+          example: https://compound.finance/images/compound-logo.svg
+        positionType:
+          $ref: '#/components/schemas/PositionType'
+        chainId:
+          type: integer
+          description: Blockchain ID where the protocol operates (e.g., 1, 10, 56).
+          example: 1
+        productId:
+          type: string
+          description: Identifier for the specific product within the protocol.
+          example: pool
+        success:
+          type: boolean
+          description: Boolean indicating if the query was successful.
+          example: true
+        tokens:
+          type: array
+          description: >-
+            An array of token objects, empty in the first item and populated in
+            the third. For each token, details like address, name, symbol, type,
+            profit, performance, and calculation data are provided.
+          items:
+            $ref: '#/components/schemas/Token'
+        fromBlock:
+          type: integer
+          description: Starting block for the snapshot.
+          example: 10000000
+        toBlock:
+          type: integer
+          description: Ending block for the snapshot.
+          example: 10005000
+        error:
+          type: object
+          description: >-
+            Present in the second item if success is false, providing an error
+            message and details.
+      required:
+        - protocolId
+        - name
+        - description
+        - siteUrl
+        - iconUrl
+        - positionType
+        - chainId
+        - productId
+        - success
+        - tokens
+        - fromBlock
+        - toBlock
+    Protocol:
+      type: string
+      enum:
+        - aave-v2
+        - aave-v3
+        - chimp-exchange
+        - compound
+        - convex
+        - curve
+        - gmx
+        - iziswap
+        - lido
+        - maker
+        - prices
+        - stargate
+        - swell
+        - syncswap
+        - uniswap-v3
+      description: List of the DeFi protocols supported.
+    RemoveCustomerAddressesDto:
+      properties:
+        address:
+          $ref: '#/components/schemas/Caip10AccountId'
+    RpcRequest:
+      type: object
+      required:
+        - method
+        - params
+      properties:
+        method:
+          type: string
+        params:
+          type: object
+    TimePeriod:
+      type: integer
+      enum:
+        - 1
+        - 7
+        - 30
+      description: >-
+        Specifies the time frame, in days, over which the profits are
+        calculated. For example, a `timePeriod` of `30` would return the
+        performance and USD profits of the user's DeFi positions over the past
+        30 days.
+    Token:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Blockchain address of the token.
+          example: '0x030ba81f1c18d280636f32af80b9aad02cf0854e'
+        name:
+          type: string
+          description: Name of the token.
+          example: Aave interest bearing WETH
+        symbol:
+          type: string
+          description: Symbol of the token.
+          example: aWETH
+        decimals:
+          type: integer
+          description: Decimal precision of the token.
+          example: 18
+        balanceRaw:
+          type: string
+          description: Raw balance of the token.
+          example: '815273802661604223213'
+        type:
+          type: string
+          enum:
+            - protocol
+            - claimable
+            - underlying
+            - underlying-claimable
+            - fiat
+          example: protocol
+          description: Type of token
+        balance:
+          type: number
+          description: Normalized balance of the token.
+          example: 815.2738026616042
+        iconUrl:
+          type: string
+          format: uri
+          description: URL for the token's icon.
+          example: >-
+            https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png
+        tokens:
+          type: array
+          description: >-
+            Nested array for tokens within other tokens, following the same
+            structure.
+          items:
+            $ref: '#/components/schemas/Token'
+          example: |
+            [
+              {
+                "address": "TheUnitedStatesMint",
+                "name": "USD",
+                "symbol": "USD",
+                "decimals": 18,
+                "type": "fiat",
+                "balanceRaw": "2116601421387500276445819",
+                "balance": "2116601.421387500276445819"
+              }
+            ]
+      required:
+        - address
+        - name
+        - symbol
+        - decimals
+        - balanceRaw
+        - type
+        - balance
+        - iconUrl
+    UpsertCustomerAddressesDto:
+      properties:
+        address:
+          $ref: '#/components/schemas/Caip10AccountId'
+        name:
+          type: string
+          nullable: true
+          description: Sets a human-readable name for the entity.
+          example: My Address 1
+        hidden:
+          type: boolean
+          description: >-
+            Sets whether the entity is hidden from the Portfolio Dashboard
+            views.
+          example: false
+  responses:
+    DefiDataResponse:
+      description: >-
+        A structured overview of the open DeFi positions linked to a specific
+        address, or a structured overview of performance (%) and USD profits of
+        the specified address' DeFi positions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefiData'
+    NoContent:
+      description: No Content
+      content:
+        application/json:
+          example:
+            statusCode: 204
+            message: No Content
+    BadRequest:
+      description: Invalid query parameters or body
+      content:
+        application/json:
+          example:
+            statusCode: 400
+            message: Bad Request
+    Unauthorized:
+      description: Missing header 'X-Api-Key'
+      content:
+        application/json:
+          example:
+            statusCode: 401
+            message: Unauthorized
+    Forbidden:
+      description: API key invalid, expired, or no requests left
+      content:
+        application/json:
+          example:
+            statusCode: 403
+            message: Forbidden
+    NotFound:
+      description: Cannot find the requested resource
+      content:
+        application/json:
+          example:
+            statusCode: 404
+            message: Not Found
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: >
+        To ensure secure access to our REST API, you need to authenticate your
+        requests with an API key. To generate your API key, visit the page
+        [API](https://metamask-institutional.io/api-subscription) in the
+        dashboard. Include the API key in the header `X-Api-Key` on your HTTP
+        requests.
+
+
+        The following example uses cURL to get a snapshot using the `GET
+        /snapshots/{snapshotId}` endpoint:
+
+
+        ```bash
+
+        curl --request GET \
+          --url 'https://api.metamask-institutional.io/snapshots/{snapshotId}' \
+          --header 'X-Api-Key: <APIKEY>'
+        ```
+
+
+        You can use any programming language:
+
+
+        ```js
+
+        import axios from "axios";
+
+
+        const options = {
+          method: 'GET',
+          url: 'https://api.metamask-institutional.io/snapshots/{snapshotId}',
+          headers: {'X-Api-Key': '<APIKEY>'}
+        };
+
+
+        axios.request(options).then(function (response) {
+          console.log(response.data);
+        }).catch(function (error) {
+          console.error(error);
+        });
+
+        ```
+
+
+
+        - Do not share your API key. Treat it like a password.
+
+        - If you lost your API key, rotate it via the page
+        [API](https://metamask-institutional.io/api-subscription) in the
+        dashboard.
+
+        - If you believe your API key has been compromised, rotate it via the
+        page [API](https://metamask-institutional.io/api-subscription) in the
+        dashboard.
+
+        - Failure to include the API key in your requests will result in an
+        authentication error.
