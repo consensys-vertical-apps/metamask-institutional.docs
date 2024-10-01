@@ -7,16 +7,43 @@ on:
     branches:
       - main
 
+# jobs:
+#   build:
+#     name: Build
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Build
+#         uses: ConsenSys/docs-gha/build@main
+#         with:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  test-docs-build:
     permissions:
+      id-token: write
       contents: read
+      pages: write
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node Base actions
+        uses: consensys-vertical-apps/shared-services-workflows/.github/actions/node-base-actions@v0.42.1
+        with:
+          node_version: 20
+          npm_client: npm
+          npm_registry_name: npm
+          npm_registry_url: ${{ vars.JFROG_NPM_PRIVATE_REGISTRY_URL }}
+
+      - name: Install dependencies
+        run: npm ci
+        # working-directory: docs
 
       - name: Build
-        uses: ConsenSys/docs-gha/build@main
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: num run build
+        # working-directory: docs
