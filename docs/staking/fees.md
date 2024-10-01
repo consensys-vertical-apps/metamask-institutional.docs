@@ -10,7 +10,7 @@ You choose and change freely over time the fee rate (%) that gets charged on sta
 
 ### Fees shown within the MMI interface
 
-**MMI** [runs a healthcheck on each Staking Provider's Connector](./integrating-via-a-connector/register-your-api.md) every 60 seconds. The fee rate shown to the user within the **MMI** interface in column `SSP Fees` is the fee rate you provide via [GET /details](./integrating-via-a-connector/adapter-openapi).
+**MMI** [runs a health check on each Staking Provider's Connector](./integrating-via-a-connector/register-your-api.md) every 60 seconds. The fee rate shown to the user within the **MMI** interface in column `SSP Fees` is the fee rate you provide via [GET /details](./integrating-via-a-connector/adapter-openapi).
 
 ![Portfolio Dashboard](/img/staking/portfolio-dashboard.svg)
 
