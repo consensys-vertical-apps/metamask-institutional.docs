@@ -3,7 +3,9 @@ const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 const isDev = process.env.NODE_ENV === "development";
-const baseUrl = isDev ? "/" : "/";
+const baseUrl = isDev
+  ? "/metamask-institutional.docs/"
+  : "/metamask-institutional.docs/";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
