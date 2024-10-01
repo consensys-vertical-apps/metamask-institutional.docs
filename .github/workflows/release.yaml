@@ -8,15 +8,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  #   lint:
-  # uses: ./.github/workflows/lint.yml
-  #   case:
-  # uses: ./.github/workflows/case.yml
-  build:
-    # needs: [lint, case]
-    uses: ./.github/workflows/build.yml
+  #   build:
+  # uses: ./.github/workflows/build.yml
   release:
-    needs: build
+    # needs: build
     name: Create Release
     runs-on: ubuntu-latest
     permissions:
