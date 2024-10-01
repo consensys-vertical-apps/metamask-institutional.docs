@@ -34,7 +34,8 @@
     "api/",
     "docs/test-api/",
     "sidebars.js",
-    "tsconfig.*.json"
+    "tsconfig.*.json",
+    "*.svg"
   ],
   "ignoreRegExpList": [
     "Email",
