@@ -11,9 +11,12 @@ const redocusaurus = [
     debug: Boolean(process.env.DEBUG || process.env.CI),
     specs: [
       {
-        id: "reference",
+        id: "api-gateway",
         spec: "./node_modules/@codefi/mmi-openapi-arcanum/dist/apis/api-gateway/openapi.yaml",
-        route: "docs",
+      },
+      {
+        id: "staking-connector",
+        spec: "./node_modules/@codefi/mmi-openapi-arcanum/dist/apis/staking-connector/openapi.yaml",
       },
     ],
     theme: {
