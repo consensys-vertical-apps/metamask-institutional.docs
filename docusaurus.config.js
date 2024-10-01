@@ -41,7 +41,7 @@ const baseUrl = isDev
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "MetaMask Institutional documentation",
-  //   tagline: "Something catchy",
+  tagline: "The most trusted DeFi wallet and Web3 gateway for organizations.",
   url: "https://docs.metamask-institutional.io",
   baseUrl,
   onBrokenLinks: "throw",
