@@ -22,7 +22,7 @@ on:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  test-docs-build:
+  build:
     permissions:
       id-token: write
       contents: read
@@ -45,5 +45,5 @@ jobs:
         # working-directory: docs
 
       - name: Build
-        run: num run build
+        run: npm run build
         # working-directory: docs
