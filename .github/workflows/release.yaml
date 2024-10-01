@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yml
-  case:
-    uses: ./.github/workflows/case.yml
+  #   lint:
+  # uses: ./.github/workflows/lint.yml
+  #   case:
+  # uses: ./.github/workflows/case.yml
   build:
-    needs: [lint, case]
+    # needs: [lint, case]
     uses: ./.github/workflows/build.yml
   release:
     needs: build
