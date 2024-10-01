@@ -2,6 +2,37 @@ const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
+/**
+ * @see https://github.com/rohit-gohri/redocusaurus
+ */
+const redocusaurus = [
+  "redocusaurus",
+  {
+    debug: Boolean(process.env.DEBUG || process.env.CI),
+    specs: [
+      {
+        id: "reference",
+        spec: "./node_modules/@codefi/mmi-openapi-arcanum/dist/apis/api-gateway/openapi.yaml",
+        route: "docs",
+      },
+    ],
+    theme: {
+      options: {
+        pathInMiddlePanel: true,
+        sortEnumValuesAlphabetically: true,
+        sortOperationsAlphabetically: true,
+        sortPropsAlphabetically: true,
+        sortTagsAlphabetically: true,
+        disableSearch: true,
+      },
+      /**
+       * Highlight color for docs
+       */
+      primaryColor: "#2C56DD",
+    },
+  },
+];
+
 const isDev = process.env.NODE_ENV === "development";
 const baseUrl = isDev
   ? "/metamask-institutional.docs/"
@@ -36,9 +67,8 @@ const config = {
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          // Set a base path separate from default /docs
-          editUrl: "https://github.com/Consensys/docs-template/tree/main/",
-          routeBasePath: "/",
+          editUrl: undefined, // Remove the "edit this page" links.
+          routeBasePath: "/", // Serve the docs at the site's root
           path: "./docs",
           includeCurrentVersion: true,
           // lastVersion: "23.x",
@@ -74,6 +104,7 @@ const config = {
         },
       },
     ],
+    redocusaurus,
   ],
 
   themeConfig:
@@ -134,7 +165,6 @@ const config = {
           },
           {
             type: "doc",
-            // sidebarId: "stakingSidebar",
             docId: "api/index",
             position: "left",
             label: "API",
