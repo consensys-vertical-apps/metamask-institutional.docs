@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  #   build:
-  #     uses: ./.github/workflows/build.yml
+  build:
+    uses: ./.github/workflows/build.yml
 
   release:
-    # needs: build
+    needs: build
     name: Create Release
     runs-on: ubuntu-latest
     permissions:
@@ -22,7 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: ./.github/workflows/build.yml
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
 
       #   - name: Release
       #     uses: Consensys/docs-gha/release@main
