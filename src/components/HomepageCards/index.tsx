@@ -85,7 +85,7 @@ const CardList: CardItem[][] = [
       buttonType: "secondary",
     },
     {
-      title: "Python SDK",
+      title: "SDK",
       link: "/sdk",
       description: (
         <>

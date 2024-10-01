@@ -157,6 +157,24 @@ const config = {
         },
         items: [
           {
+            type: "doc",
+            docId: "custodian/index",
+            position: "left",
+            label: "Custodian",
+          },
+          {
+            type: "doc",
+            docId: "eca1/index",
+            position: "left",
+            label: "ECA1",
+          },
+          {
+            type: "doc",
+            docId: "eca3/index",
+            position: "left",
+            label: "ECA3",
+          },
+          {
             type: "docSidebar",
             sidebarId: "stakingSidebar",
             docId: "staking/introduction",
@@ -168,6 +186,18 @@ const config = {
             docId: "api/index",
             position: "left",
             label: "API",
+          },
+          {
+            type: "doc",
+            docId: "sdk/index",
+            position: "left",
+            label: "SDK",
+          },
+          {
+            type: "doc",
+            docId: "defi-adapters/index",
+            position: "left",
+            label: "DeFi Adapters",
           },
           {
             href: "https://github.com/consensys-vertical-apps/metamask-institutional",
