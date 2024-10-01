@@ -13,10 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version:
-          [
-            "docs",            
-          ]
+        version: ["docs"]
     steps:
       - uses: actions/checkout@v3
       - id: config
@@ -52,4 +49,3 @@ jobs:
         run: |
           cd ./algolia/scraper
           pipenv run python -m src.index
-
