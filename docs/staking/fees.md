@@ -6,11 +6,11 @@ sidebar_position: 5
 
 ## How staking fees are calculated
 
-You choose and change freely over time the fee rate (%) that gets charged on staking rewards, and you expose it via your **Connector** through the endpoint [GET /details](./integrating-via-a-connector/adapter-openapi). For complete commercial details, please refer to the **Staking Service Agreement** document.
+You choose and change freely over time the fee rate (%) that gets charged on staking rewards, and you expose it via your **Connector** through the endpoint [GET /details](./integrating-via-a-connector/staking-connector). For complete commercial details, please refer to the **Staking Service Agreement** document.
 
 ### Fees shown within the MMI interface
 
-**MMI** [runs a health check on each Staking Provider's Connector](./integrating-via-a-connector/register-your-api.md) every 60 seconds. The fee rate shown to the user within the **MMI** interface in column `SSP Fees` is the fee rate you provide via [GET /details](./integrating-via-a-connector/adapter-openapi).
+**MMI** [runs a health check on each Staking Provider's Connector](./integrating-via-a-connector/register-your-api.md) every 60 seconds. The fee rate shown to the user within the **MMI** interface in column `SSP Fees` is the fee rate you provide via [GET /details](./integrating-via-a-connector/staking-connector).
 
 ![Portfolio Dashboard](/img/staking/portfolio-dashboard.svg)
 

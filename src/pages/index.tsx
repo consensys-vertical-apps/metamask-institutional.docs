@@ -1,9 +1,9 @@
-import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Heading from "@theme/Heading";
 import Layout from "@theme/Layout";
 import clsx from "clsx";
 
+import HomepageCards from "../components/HomepageCards";
 import styles from "./index.module.css";
 
 function HomepageHeader() {
@@ -26,15 +26,7 @@ export default function Home() {
       description="Description will go into a meta tag in <head />">
       <HomepageHeader />
       <main>
-        {/* <HomepageFeatures /> */}
-        <div className={styles.buttons} style={{ marginTop: "10rem" }}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/staking/introduction">
-            Staking
-          </Link>
-          {/* */}
-        </div>
+        <HomepageCards />
       </main>
     </Layout>
   );

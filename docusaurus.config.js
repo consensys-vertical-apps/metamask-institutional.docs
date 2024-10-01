@@ -11,9 +11,12 @@ const redocusaurus = [
     debug: Boolean(process.env.DEBUG || process.env.CI),
     specs: [
       {
-        id: "reference",
+        id: "api-gateway",
         spec: "./node_modules/@codefi/mmi-openapi-arcanum/dist/apis/api-gateway/openapi.yaml",
-        route: "docs",
+      },
+      {
+        id: "staking-connector",
+        spec: "./node_modules/@codefi/mmi-openapi-arcanum/dist/apis/staking-connector/openapi.yaml",
       },
     ],
     theme: {
@@ -41,7 +44,7 @@ const baseUrl = isDev
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "MetaMask Institutional documentation",
-  //   tagline: "Something catchy",
+  tagline: "The most trusted DeFi wallet and Web3 gateway for organizations.",
   url: "https://docs.metamask-institutional.io",
   baseUrl,
   onBrokenLinks: "throw",
@@ -157,6 +160,24 @@ const config = {
         },
         items: [
           {
+            type: "doc",
+            docId: "custodian/index",
+            position: "left",
+            label: "Custodian",
+          },
+          {
+            type: "doc",
+            docId: "eca1/index",
+            position: "left",
+            label: "ECA1",
+          },
+          {
+            type: "doc",
+            docId: "eca3/index",
+            position: "left",
+            label: "ECA3",
+          },
+          {
             type: "docSidebar",
             sidebarId: "stakingSidebar",
             docId: "staking/introduction",
@@ -168,6 +189,18 @@ const config = {
             docId: "api/index",
             position: "left",
             label: "API",
+          },
+          {
+            type: "doc",
+            docId: "sdk/index",
+            position: "left",
+            label: "SDK",
+          },
+          {
+            type: "doc",
+            docId: "defi-adapters/index",
+            position: "left",
+            label: "DeFi Adapters",
           },
           {
             href: "https://github.com/consensys-vertical-apps/metamask-institutional",
