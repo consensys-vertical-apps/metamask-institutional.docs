@@ -24,4 +24,4 @@ Once the dashboard receives the deposit payload, it opens it in the **MetaMask I
 
 ## Implement this OpenAPI specification
 
-To be compatible with **MMI Staking**, your **Connector** must support the above features, and expose them through this [OpenAPI Specification](./connector-openapi).
+To be compatible with **MMI Staking**, your **Connector** must support the above features, and expose them through this [OpenAPI Specification](./staking-connector).
