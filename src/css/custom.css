@@ -308,3 +308,34 @@ img, iframe {
 .redoc-wrap {
     border: none !important;
 }
+
+/* Tweak Redocusaurus styles to make it look the same as Docusaurus, for a seeminlgy less integration. */
+
+.redocusaurus label {
+    color: var(--ifm-menu-color);
+    line-height: 1.25;
+    padding: var(--ifm-menu-link-padding-vertical) var(--ifm-menu-link-padding-horizontal);
+    border-radius: 0.25rem;
+    transition:  var(--ifm-transition-fast) var(--ifm-transition-timing-default);
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.redocusaurus label.active {
+    color: var(--ifm-menu-color-active);
+    background-color: var(--ifm-menu-color-background-active);
+}
+
+.redocusaurus label:hover {
+    color: var(--ifm-menu-color);
+    background-color: var(--ifm-menu-color-background-active);
+}
+
+.redocusaurus li {
+    margin: 6px 8px;
+}
+
+.operation-type {
+    margin-top: 0px !important;
+}
