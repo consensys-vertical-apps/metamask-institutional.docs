@@ -9,8 +9,14 @@ sidebar_position: 2
 In a terminal:
 
 ```sh
-export MMISDK_QREDO_REFRESH_TOKEN=xxxx # You can choose whatever variable name here as long as you adapt it in the script below
+export MMISDK_QREDO_REFRESH_TOKEN=xxxx #
 ```
+
+:::info
+
+You can use any variable name here, as long as you adapt it in the script below.
+
+:::
 
 ## Use the Factory
 
