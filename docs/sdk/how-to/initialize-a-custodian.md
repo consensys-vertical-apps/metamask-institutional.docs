@@ -9,7 +9,7 @@ sidebar_position: 2
 In a terminal:
 
 ```sh
-export MMISDK_QREDO_REFRESH_TOKEN=xxxx #
+export MMISDK_QREDO_REFRESH_TOKEN=xxxx
 ```
 
 :::info
