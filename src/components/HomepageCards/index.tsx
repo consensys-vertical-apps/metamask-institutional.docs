@@ -23,8 +23,8 @@ type CardItem = {
 const CardList: CardItem[][] = [
   [
     {
-      title: "Custodian integrations",
-      link: "/custodian",
+      title: "Custodians",
+      link: "/custodians",
       description: (
         <>
           Connect your custody system to MetaMask Institutional, enabling users
@@ -34,35 +34,9 @@ const CardList: CardItem[][] = [
       buttonName: "Get started",
       buttonType: "secondary",
     },
-    // {
-    //   title: "ECA1",
-    //   link: "/eca1",
-    //   description: (
-    //     <>
-    //       Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
-    //       Institutional to send user transactions to your platform.
-    //     </>
-    //   ),
-    //   buttonName: "Get started",
-    //   buttonType: "secondary",
-    // },
-    // {
-    //   title: "ECA3",
-    //   link: "/eca3",
-    //   description: (
-    //     <>
-    //       Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
-    //       Institutional to send user transactions to your platform.
-    //     </>
-    //   ),
-    //   buttonName: "Get started",
-    //   buttonType: "secondary",
-    // },
-  ],
-  [
     {
-      title: "Staking integrations",
-      link: "/staking/introduction",
+      title: "Staking Providers",
+      link: "/staking-providers",
       description: (
         <>
           Offer native ETH staking services to MetaMask Institutional users,
@@ -73,7 +47,7 @@ const CardList: CardItem[][] = [
       buttonType: "secondary",
     },
     {
-      title: "MMI API suite",
+      title: "API",
       link: "/api",
       description: (
         <>
@@ -97,8 +71,8 @@ const CardList: CardItem[][] = [
     //   buttonType: "secondary",
     // },
     {
-      title: "DeFi adapter developers",
-      link: "/defi-adapters",
+      title: "DeFi Developers",
+      link: "/defi-developers",
       description: (
         <>
           Build an adapter for your DeFi protocol to enable MetaMask

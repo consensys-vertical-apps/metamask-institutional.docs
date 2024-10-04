@@ -159,48 +159,46 @@ const config = {
           srcDark: "img/logo_dark.svg",
         },
         items: [
+          //   {
+          //     label: "Users",
+          //     position: "left",
+          //     items: [
+          //       { label: "Web API", to: "/api" },
+          //       { label: "Python SDK", to: "/sdk" },
+          //     ],
+          //   },
+          //   {
+          //     label: "Integrators",
+          //     position: "left",
+          //     items: [
+          //       { label: "Custodians", to: "/custodian" },
+          //       { label: "Staking Providers", to: "/staking" },
+          //       { label: "DeFi Protocols", to: "/defi-protocols" },
+          //     ],
+          //   },
           {
             type: "doc",
-            docId: "custodian/index",
+            docId: "custodians/index",
             position: "left",
-            label: "Custodian integrations",
+            label: "Custodians",
           },
-          //   {
-          //     type: "doc",
-          //     docId: "eca1/index",
-          //     position: "left",
-          //     label: "ECA1",
-          //   },
-          //   {
-          //     type: "doc",
-          //     docId: "eca3/index",
-          //     position: "left",
-          //     label: "ECA3",
-          //   },
           {
-            type: "docSidebar",
-            sidebarId: "stakingSidebar",
-            docId: "staking/introduction",
+            type: "doc",
+            docId: "staking-providers/index",
             position: "left",
-            label: "Staking integrations",
+            label: "Staking Providers",
           },
           {
             type: "doc",
             docId: "api/index",
             position: "left",
-            label: "MMI API suite",
+            label: "API",
           },
-          //   {
-          //     type: "doc",
-          //     docId: "sdk/index",
-          //     position: "left",
-          //     label: "SDK",
-          //   },
           {
             type: "doc",
-            docId: "defi-adapters/index",
+            docId: "defi-developers/index",
             position: "left",
-            label: "DeFi adapter developers",
+            label: "DeFi Developers",
           },
           {
             href: "https://github.com/consensys-vertical-apps/metamask-institutional",
