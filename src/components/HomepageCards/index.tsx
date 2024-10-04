@@ -23,7 +23,7 @@ type CardItem = {
 const CardList: CardItem[][] = [
   [
     {
-      title: "Custodian",
+      title: "Custodian integrations",
       link: "/custodian",
       description: (
         <>
@@ -34,34 +34,34 @@ const CardList: CardItem[][] = [
       buttonName: "Get started",
       buttonType: "secondary",
     },
-    {
-      title: "ECA1",
-      link: "/eca1",
-      description: (
-        <>
-          Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
-          Institutional to send user transactions to your platform.
-        </>
-      ),
-      buttonName: "Get started",
-      buttonType: "secondary",
-    },
-    {
-      title: "ECA3",
-      link: "/eca3",
-      description: (
-        <>
-          Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
-          Institutional to send user transactions to your platform.
-        </>
-      ),
-      buttonName: "Get started",
-      buttonType: "secondary",
-    },
+    // {
+    //   title: "ECA1",
+    //   link: "/eca1",
+    //   description: (
+    //     <>
+    //       Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
+    //       Institutional to send user transactions to your platform.
+    //     </>
+    //   ),
+    //   buttonName: "Get started",
+    //   buttonType: "secondary",
+    // },
+    // {
+    //   title: "ECA3",
+    //   link: "/eca3",
+    //   description: (
+    //     <>
+    //       Implement the Ethereum Custodian JSON-RPC API to allow MetaMask
+    //       Institutional to send user transactions to your platform.
+    //     </>
+    //   ),
+    //   buttonName: "Get started",
+    //   buttonType: "secondary",
+    // },
   ],
   [
     {
-      title: "Staking",
+      title: "Staking integrations",
       link: "/staking/introduction",
       description: (
         <>
@@ -73,7 +73,7 @@ const CardList: CardItem[][] = [
       buttonType: "secondary",
     },
     {
-      title: "API",
+      title: "MMI API suite",
       link: "/api",
       description: (
         <>
@@ -84,20 +84,20 @@ const CardList: CardItem[][] = [
       buttonName: "Get started",
       buttonType: "secondary",
     },
+    // {
+    //   title: "SDK",
+    //   link: "/sdk",
+    //   description: (
+    //     <>
+    //       Use our Python library to create and submit Ethereum transactions to
+    //       custodians connected with MetaMask Institutional.
+    //     </>
+    //   ),
+    //   buttonName: "Get started",
+    //   buttonType: "secondary",
+    // },
     {
-      title: "SDK",
-      link: "/sdk",
-      description: (
-        <>
-          Use our Python library to create and submit Ethereum transactions to
-          custodians connected with MetaMask Institutional.
-        </>
-      ),
-      buttonName: "Get started",
-      buttonType: "secondary",
-    },
-    {
-      title: "DeFi Adapters",
+      title: "DeFi adapter developers",
       link: "/defi-adapters",
       description: (
         <>
