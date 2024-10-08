@@ -939,16 +939,30 @@ paths:
     post:
       summary: Search Transactions
       description: >
-        This endpoint enables customers to search through transactions. It
-        provides a comprehensive tool for analyzing transaction history across
-        various blockchains, allowing for detailed insights into transactions
-        based on a wide range of criteria, including sender and receiver
-        addresses, chain IDs, timestamps, asset types, and more.
+        Search trough all types of asset transfers. It provides a comprehensive
+
+        tool for analyzing transaction history across various blockchains,
+
+        allowing for detailed insights into transactions based on a wide range
+
+        of criteria, including sender and receiver addresses, chain IDs,
+
+        timestamps, asset types, and more.
+
+
+        **You must always provide at least one of the body params `from`, `to`,
+        or `transactionHashes`.**
 
 
         **Note:** This search functionality retrieves transactions related to
         addresses that have been used in transactions through the MMI extension
         or that are added to the customer's account.
+
+
+        **Note:** A `POST` request is used here instead of a `GET` to
+        accommodate an arbitrary number of addresses in the filters
+        `from/to/contractAddresses/transactionHashes` without running into URL
+        length limitations.
 
 
         **Note:** There may be a brief delay of a few seconds before a
@@ -2923,19 +2937,21 @@ components:
       type: object
       properties:
         from:
-          example:
-            - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
           description: Source addresses
-          type: array
-          items:
-            type: string
-        to:
           example:
             - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
-          description: Destination addresses
           type: array
           items:
             type: string
+            pattern: /^0x[a-fA-F0-9]{40}$/
+        to:
+          description: Destination addresses
+          example:
+            - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
+          type: array
+          items:
+            type: string
+            pattern: /^0x[a-fA-F0-9]{40}$/
         chainIds:
           example:
             - 1
@@ -2986,6 +3002,7 @@ components:
           type: array
           items:
             type: string
+            pattern: /^0x[a-fA-F0-9]{40}$/
         tokenIds:
           example:
             - '5'
@@ -3002,6 +3019,7 @@ components:
           type: array
           items:
             type: string
+            pattern: /^0x[a-fA-F0-9]{64}$/
         blockNumbers:
           example:
             - 18685487
@@ -3015,10 +3033,13 @@ components:
         excludeContracts:
           example:
             - '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
-          description: Addresses to filter out transactions with matching contractAddress
+          description: >-
+            Addresses to filter out transactions with matching
+            `contractAddress`.
           type: array
           items:
             type: string
+            pattern: /^0x[a-fA-F0-9]{40}$/
         hideSpam:
           type: boolean
           description: Hide transactions with known spam addresses
@@ -3037,6 +3058,7 @@ components:
         hash:
           type: string
           description: Hash of the transaction.
+          pattern: /^0x[a-fA-F0-9]{64}$/
           example: '0xe3852b9c47f651395d4d6a8f517c6f2f6ecb44445684fc32ef08155bacb62c68'
         transactionIndex:
           type: number
@@ -3061,10 +3083,12 @@ components:
         from:
           type: string
           description: Address of the sender.
+          pattern: /^0x[a-fA-F0-9]{40}$/
           example: '0xfc75970a11669c571a4b8f8abeceeecffa5dc7ea'
         to:
           type: string
           description: Address of the receiver.
+          pattern: /^0x[a-fA-F0-9]{40}$/
           example: '0x8d203862455269aa79e2d5b7974d0816673f4e2c'
         value:
           type: string
@@ -3093,6 +3117,7 @@ components:
         contractAddress:
           type: string
           description: Address of the token's contract, in case of a token transfer.
+          pattern: /^0x[a-fA-F0-9]{40}$/
           example: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
         cumulativeGasUsed:
           type: string
