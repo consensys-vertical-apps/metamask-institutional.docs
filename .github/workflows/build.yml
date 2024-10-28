@@ -1,5 +1,15 @@
 ---
 name: Build
+# inputs:
+#   jfrog_url:
+#     description: JFrog URL
+#     default: https://consensys.jfrog.io
+#   jfrog_oidc_provider_name:
+#     description: OIDC provider name as configured on JFrog Platform
+#     default: github
+#   jfrog_audience:
+#     description: audience for JFrog OIDC
+#     required: false
 
 on:
   workflow_call:
@@ -16,18 +26,39 @@ jobs:
       pages: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 📖 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Node Base actions
-        uses: consensys-vertical-apps/shared-services-workflows/.github/actions/node-base-actions@v0.42.1
-        with:
-          node_version: 20
-          npm_client: npm
-          npm_registry_name: npm
-          npm_registry_url: ${{ vars.JFROG_NPM_PRIVATE_REGISTRY_URL }}
+      # - name: JFrog Auth
+      #   uses: jfrog/setup-jfrog-cli@v4
+      #   id: jfrog_token
+      #   env:
+      #     JF_URL: ${{ inputs.jfrog_url }}
+      #   with:
+      #     oidc-provider-name: ${{ inputs.jfrog_oidc_provider_name }}
+      #     oidc-audience: ${{ inputs.jfrog_audience }}
 
-      - name: Build
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          always-auth: true
+          registry-url: https://consensys.jfrog.io/artifactory/api/npm/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      #   - name: Node Base actions
+      #     uses: consensys-vertical-apps/shared-services-workflows/.github/actions/node-base-actions@v0.42.1
+      #     with:
+      #       node_version: 20
+      #       npm_client: npm
+      #       npm_registry_name: npm
+      #       npm_registry_url: ${{ vars.JFROG_NPM_PRIVATE_REGISTRY_URL }}
+
+      - name: ⬇️ Install
+        run: npm ci
+
+      - name: 🏗️ Build
         run: npm run build
 
       - name: Upload build artifacts
