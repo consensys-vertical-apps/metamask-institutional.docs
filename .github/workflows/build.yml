@@ -27,29 +27,58 @@ jobs:
         with:
           oidc-provider-name: github
 
-      - name: Set npm/yarn config
-        shell: bash
-        env:
-          JFROG_NPM_REPO: npm
-          REGISTRY_URL: https://consensys.jfrog.io/artifactory/api/npm/npm/
-          JFROG_ACCESS_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
-        run: |
-          jf npm-config --global=true --repo-resolve="$JFROG_NPM_REPO"
+      # - name: Set npm/yarn config
+      #   shell: bash
+      #   env:
+      #     JFROG_ACCESS_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
+      #     NPM_CLIENT: npm
+      #     REGISTRY_URL: https://consensys.jfrog.io/artifactory/api/npm/npm/
+
+      #   # run: |
+      #   #   jf npm-config --global=true --repo-resolve="$JFROG_NPM_REPO"
 
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           always-auth: true
+          cache: npm
 
-      - name: ⬇️ Install
-        run: npm ci
+      - name: Setup lock file name
+        id: lock_file_name
+        shell: bash
+        run: |
+            echo "file_name=**/package-lock.json" >> "$GITHUB_OUTPUT"
+        env:
+          NPM_CLIENT: npm
 
-      - name: 🏗️ Build
-        run: npm run build
+      - name: Set npm/yarn config
+        shell: bash
+        env:
+          JFROG_NPM_REPO: npm
+          JFROG_NPM_DEPLOY_REPO: npm-local
+          NPM_CLIENT: npm
+          REGISTRY_URL: https://consensys.jfrog.io/artifactory/api/npm/npm/
+          JFROG_ACCESS_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
+        run: |
+            jf npm-config --global=true --repo-resolve="$JFROG_NPM_REPO" --repo-deploy="$JFROG_NPM_DEPLOY_REPO"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./build
+      - name: NPM client install
+        shell: bash
+        run: |
+            jf npm ci --audit=false
+        env:
+          NPM_CLIENT: npm
+          NODE_AUTH_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
+
+      # - name: ⬇️ Install
+      #   run: npm ci
+
+      # - name: 🏗️ Build
+      #   run: npm run build
+
+      # - name: Upload build artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build
