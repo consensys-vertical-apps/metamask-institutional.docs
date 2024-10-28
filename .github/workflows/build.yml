@@ -19,14 +19,28 @@ jobs:
       - name: 📖 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: JFrog Auth
+        uses: jfrog/setup-jfrog-cli@v4
+        id: jfrog_token
+        env:
+          JF_URL: https://consensys.jfrog.io
+        with:
+          oidc-provider-name: github
+
+      - name: Set npm/yarn config
+        shell: bash
+        env:
+          JFROG_NPM_REPO: npm
+          REGISTRY_URL: https://consensys.jfrog.io/artifactory/api/npm/npm/
+          JFROG_ACCESS_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
+        run: |
+          jf npm-config --global=true --repo-resolve="$JFROG_NPM_REPO"
+
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           always-auth: true
-          registry-url: https://consensys.jfrog.io/artifactory/api/npm/npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: ⬇️ Install
         run: npm ci
