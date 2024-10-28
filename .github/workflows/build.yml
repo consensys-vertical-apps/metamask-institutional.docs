@@ -19,14 +19,20 @@ jobs:
       - name: 📖 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: JFrog Auth
+        uses: jfrog/setup-jfrog-cli@v4
+        id: jfrog_token
+        env:
+          JF_URL: https://consensys.jfrog.io
+        with:
+          oidc-provider-name: github
+
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           always-auth: true
           registry-url: https://consensys.jfrog.io/artifactory/api/npm/npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: ⬇️ Install
         run: npm ci
