@@ -146,13 +146,13 @@ tags:
     description: |
       <SchemaDefinition schemaRef="#/components/schemas/CustomerAddress" />
   - name: position_model
-    x-displayName: Position
+    x-displayName: DefiPositionResponse
     description: |
-      <SchemaDefinition schemaRef="#/components/schemas/Position" />
+      <SchemaDefinition schemaRef="#/components/schemas/DefiPositionResponse" />
   - name: profit_model
-    x-displayName: Profit
+    x-displayName: DefiProfitsResponse
     description: |
-      <SchemaDefinition schemaRef="#/components/schemas/Profit" />
+      <SchemaDefinition schemaRef="#/components/schemas/DefiProfitsResponse" />
   - name: transaction_model
     x-displayName: Transaction
     description: |
@@ -1272,6 +1272,131 @@ components:
               - $ref: '#/components/schemas/GetPositionsInstitutionalRpcRequest'
               - $ref: '#/components/schemas/GetProfitsInstitutionalRpcRequest'
   schemas:
+    AdapterErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            details:
+              type: object
+              nullable: true
+          required:
+            - message
+      required:
+        - error
+    ApyInfo:
+      type: object
+      description: >-
+        Data structure that contains the calculated APY and various contextual
+        information.
+      properties:
+        apyPercent:
+          type: number
+          description: APY as a percentage.
+          example: 5.25
+        apy:
+          type: number
+          description: Annual Percentage Yield (APY) as a decimal.
+          example: 0.0525
+        aprPercent:
+          type: number
+          description: APR as a percentage.
+          example: 5
+        apr:
+          type: number
+          description: Annual Percentage Rate (APR) as a decimal.
+          example: 0.05
+        period:
+          type: object
+          properties:
+            blocknumberStart:
+              type: integer
+              description: Starting block number for the APY calculation period.
+              example: 1000000
+            blocknumberEnd:
+              type: integer
+              description: Ending block number for the APY calculation period.
+              example: 1005000
+            interestPercent:
+              type: number
+              description: Interest percentage over the period.
+              example: 1.25
+            interest:
+              type: number
+              description: Interest earned over the period as a decimal.
+              example: 0.0125
+          required:
+            - blocknumberStart
+            - blocknumberEnd
+            - interestPercent
+            - interest
+        compounding:
+          type: object
+          properties:
+            durationDays:
+              type: integer
+              description: Duration of the compounding period in days.
+              example: 365
+            frequency:
+              type: integer
+              description: Compounding frequency in days per year.
+              example: 1
+          required:
+            - durationDays
+            - frequency
+      required:
+        - apyPercent
+        - apy
+        - aprPercent
+        - apr
+        - period
+        - compounding
+    CalculationData:
+      type: object
+      properties:
+        withdrawals:
+          type: number
+          description: Total withdrawals for the period
+          example: 500
+        deposits:
+          type: number
+          description: Total deposits for the period
+          example: 1000
+        repays:
+          type: number
+          description: Total repays for the period
+          example: 200
+        borrows:
+          type: number
+          description: Total borrows for the period
+          example: 300
+        startPositionValue:
+          type: number
+          description: Starting position value for the period
+          example: 15000
+        endPositionValue:
+          type: number
+          description: Ending position value for the period
+          example: 16000
+        hasTokensWithoutUSDPrices:
+          type: boolean
+          description: Indicates if there are tokens without USD prices
+          example: true
+        tokensWithoutUSDPrices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Underlying'
+          description: List of tokens without USD prices
+      required:
+        - withdrawals
+        - deposits
+        - repays
+        - borrows
+        - startPositionValue
+        - endPositionValue
     Caip10AccountId:
       type: string
       description: >
@@ -1474,29 +1599,170 @@ components:
         - tokenBalances
         - deFiPositions
         - nftCollections
-    DefiData:
+    DefiPositionResponse:
       type: object
-      required:
-        - createdAt
-        - updatedAt
-        - data
+      oneOf:
+        - allOf:
+            - $ref: '#/components/schemas/ProtocolDetails'
+            - type: object
+              properties:
+                chainName:
+                  type: string
+              required:
+                - chainName
+            - anyOf:
+                - allOf:
+                    - type: object
+                      properties:
+                        tokens:
+                          type: array
+                          description: List of DeFi positions for the user
+                          items:
+                            $ref: >-
+                              #/components/schemas/DisplayPositionProtocolPosition
+                    - type: object
+                      properties:
+                        success:
+                          type: boolean
+                          enum:
+                            - true
+                            - false
+                      required:
+                        - success
+                - allOf:
+                    - $ref: '#/components/schemas/AdapterErrorResponse'
+                    - type: object
+                      properties:
+                        success:
+                          type: boolean
+                          enum:
+                            - false
+                      required:
+                        - success
+        - allOf:
+            - $ref: '#/components/schemas/AdapterErrorResponse'
+            - type: object
+              properties:
+                success:
+                  type: boolean
+                  enum:
+                    - false
+              required:
+                - success
+    DefiProfitsResponse:
+      type: object
+      oneOf:
+        - allOf:
+            - $ref: '#/components/schemas/ProtocolDetails'
+            - type: object
+              properties:
+                chainName:
+                  type: string
+              required:
+                - chainName
+            - anyOf:
+                - allOf:
+                    - $ref: '#/components/schemas/ProfitsWithRange'
+                    - type: object
+                      properties:
+                        success:
+                          type: boolean
+                          enum:
+                            - true
+                            - false
+                      required:
+                        - success
+                - allOf:
+                    - $ref: '#/components/schemas/AdapterErrorResponse'
+                    - type: object
+                      properties:
+                        success:
+                          type: boolean
+                          enum:
+                            - false
+                      required:
+                        - success
+        - allOf:
+            - $ref: '#/components/schemas/AdapterErrorResponse'
+            - type: object
+              properties:
+                success:
+                  type: boolean
+                  enum:
+                    - false
+              required:
+                - success
+    DisplayPositionProtocolPosition:
+      allOf:
+        - $ref: '#/components/schemas/ProtocolPosition'
+        - type: object
+          properties:
+            balance:
+              type: number
+              description: User's balance of the token in readable format
+              example: 2000.5
+            tokens:
+              type: array
+              description: List of underlying display positions for the protocol
+              items:
+                $ref: '#/components/schemas/DisplayPositionUnderlying'
+            price:
+              type: number
+              description: Price of the token in USD
+              example: 1
+          required:
+            - balance
+    DisplayPositionUnderlying:
+      allOf:
+        - $ref: '#/components/schemas/Underlying'
+        - type: object
+          properties:
+            balance:
+              type: number
+              description: User's balance of the underlying token in readable format
+              example: 1500.5
+            tokens:
+              type: array
+              description: List of underlying tokens if nested
+              items:
+                $ref: '#/components/schemas/DisplayPositionUnderlying'
+            price:
+              type: number
+              description: Price of the underlying token in USD
+              example: 1
+            iconUrl:
+              type: string
+              format: uri
+              description: >-
+                URL for the token's icon, included only if `type` is
+                'Underlying' or 'UnderlyingClaimable'
+              example: https://example.com/icon.png
+          required:
+            - balance
+    Erc20Metadata:
+      type: object
       properties:
-        createdAt:
+        address:
           type: string
-          format: date-time
-          example: '2024-01-12T08:25:56.455Z'
-        updatedAt:
+          description: Token address
+          example: '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+        name:
           type: string
-          format: date-time
-          example: '2024-01-12T08:25:56.455Z'
-        data:
-          oneOf:
-            - type: array
-              items:
-                $ref: '#/components/schemas/Position'
-            - type: array
-              items:
-                $ref: '#/components/schemas/Profit'
+          description: Name of token
+          example: Dai Stablecoin
+        symbol:
+          type: string
+          description: Token symbol
+          example: DAI
+        decimals:
+          type: integer
+          description: Token decimals
+          example: 18
+      required:
+        - address
+        - name
+        - symbol
+        - decimals
     Eth1Address:
       type: string
       description: >-
@@ -1533,6 +1799,11 @@ components:
           description: Limit the results to positions on the passed list of DeFi protocols.
           items:
             $ref: '#/components/schemas/Protocol'
+        filterProductIds:
+          type: array
+          description: Limit the results to positions on the passed list of DeFi products.
+          items:
+            type: string
         filterChainIds:
           type: array
           description: Limit the results to positions on the passed list of chains.
@@ -1579,6 +1850,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Protocol'
+        filterProductIds:
+          type: array
+          description: Limit the results to positions on the passed list of DeFi products.
+          items:
+            type: string
         filterChainIds:
           type: array
           items:
@@ -3368,68 +3644,20 @@ components:
         - nftCollectionSymbol
         - nftCollectionIconUrl
         - nftCollectionTokenId
-    Position:
-      type: object
-      properties:
-        protocolId:
-          type: string
-          description: Identifier of the DeFi protocol.
-          example: aave-v2
-        name:
-          type: string
-          description: Display name of the protocol.
-          example: Aave V2
-        description:
-          type: string
-          description: Brief description of the protocol adapter.
-          example: Aave V2 is a decentralized non-custodial money market protocol.
-        siteUrl:
-          type: string
-          format: uri
-          description: URL of the protocol's website.
-          example: https://aave.com/
-        iconUrl:
-          type: string
-          format: uri
-          description: URL of the protocol's icon.
-          example: https://aave.com/favicon.ico
-        positionType:
-          $ref: '#/components/schemas/PositionType'
-        chainId:
-          type: integer
-          description: Blockchain ID where the protocol operates (e.g., 1, 10, 56).
-          example: 1
-        productId:
-          type: string
-          description: Identifier for the specific product within the protocol.
-          example: aave-v2-product-1
-        success:
-          type: boolean
-          description: Boolean indicating if the query was successful.
-          example: true
-        tokens:
-          type: array
-          description: >-
-            An array of token objects, detailing each token's information like
-            address, name, symbol, balance, and nested token details.
-          items:
-            $ref: '#/components/schemas/Token'
-        error:
-          type: object
-          description: >-
-            Present in the second item if success is false, providing an error
-            message and details.
-      required:
-        - protocolId
-        - name
-        - description
-        - siteUrl
-        - iconUrl
-        - positionType
-        - chainId
-        - productId
-        - success
-        - tokens
+    PositionProfits:
+      allOf:
+        - $ref: '#/components/schemas/Erc20Metadata'
+        - $ref: '#/components/schemas/UnderlyingProfitValues'
+        - type: object
+          properties:
+            tokenId:
+              type: string
+              description: Optional identifier for the token
+              example: 1234abc
+            type:
+              $ref: '#/components/schemas/TokenType'
+          required:
+            - type
     PositionType:
       type: string
       enum:
@@ -3448,23 +3676,59 @@ components:
           - `stake`: Staking a token e.g. staking eth or staking an lp token
           - `reward`: Claimable rewards, these type of positions will be merged with the equivalent lp position
           - `fiat-prices`: Fiat prices
-    Profit:
+    ProfitsWithRange:
+      type: object
+      properties:
+        tokens:
+          type: array
+          description: >-
+            An array of token objects, empty in the first item and populated in
+            the third. For each token, details like address, name, symbol, type,
+            profit, performance, and calculation data are provided.
+          items:
+            $ref: '#/components/schemas/PositionProfits'
+        fromBlock:
+          type: integer
+          description: Starting block for calculating the profits.
+          example: 10001000
+        toBlock:
+          type: integer
+          description: Ending block for calculating the profits.
+          example: 10005000
+    Protocol:
+      type: string
+      enum:
+        - aave-v2
+        - aave-v3
+        - chimp-exchange
+        - compound
+        - convex
+        - curve
+        - gmx
+        - iziswap
+        - lido
+        - maker
+        - prices
+        - stargate
+        - swell
+        - syncswap
+        - uniswap-v3
+      description: List of the DeFi protocols supported.
+    ProtocolDetails:
       type: object
       properties:
         protocolId:
           type: string
           description: Identifier of the DeFi protocol.
-          example: compound
+          example: compound-v2
         name:
           type: string
           description: Display name of the protocol.
-          example: Compound
+          example: CompoundV2
         description:
           type: string
           description: Brief description of the protocol adapter.
-          example: >-
-            Compound is a decentralized, blockchain-based protocol that allows
-            you to lend and borrow cryptocurrencies.
+          example: CompoundV2 borrow market adapter
         siteUrl:
           type: string
           format: uri
@@ -3485,26 +3749,6 @@ components:
           type: string
           description: Identifier for the specific product within the protocol.
           example: pool
-        success:
-          type: boolean
-          description: Boolean indicating if the query was successful.
-          example: true
-        tokens:
-          type: array
-          description: >-
-            An array of token objects, empty in the first item and populated in
-            the third. For each token, details like address, name, symbol, type,
-            profit, performance, and calculation data are provided.
-          items:
-            $ref: '#/components/schemas/Token'
-        fromBlock:
-          type: integer
-          description: Starting block for the snapshot.
-          example: 10000000
-        toBlock:
-          type: integer
-          description: Ending block for the snapshot.
-          example: 10005000
         error:
           type: object
           description: >-
@@ -3519,29 +3763,25 @@ components:
         - positionType
         - chainId
         - productId
-        - success
         - tokens
         - fromBlock
         - toBlock
-    Protocol:
-      type: string
-      enum:
-        - aave-v2
-        - aave-v3
-        - chimp-exchange
-        - compound
-        - convex
-        - curve
-        - gmx
-        - iziswap
-        - lido
-        - maker
-        - prices
-        - stargate
-        - swell
-        - syncswap
-        - uniswap-v3
-      description: List of the DeFi protocols supported.
+    ProtocolPosition:
+      allOf:
+        - $ref: '#/components/schemas/TokenBalanceWithUnderlyings'
+        - type: object
+          description: >-
+            User's position, includes balance of protocol token and related
+            underlying token balances
+          properties:
+            type:
+              $ref: '#/components/schemas/TokenType'
+            tokenId:
+              type: string
+              description: Used by NFT DeFi positions, e.g., Uniswap V3
+              example: '12345'
+          required:
+            - type
     RemoveCustomerAddressesDto:
       properties:
         address:
@@ -3567,77 +3807,76 @@ components:
         calculated. For example, a `timePeriod` of `30` would return the
         performance and USD profits of the user's DeFi positions over the past
         30 days.
-    Token:
-      type: object
-      properties:
-        address:
-          type: string
-          description: Blockchain address of the token.
-          example: '0x030ba81f1c18d280636f32af80b9aad02cf0854e'
-        name:
-          type: string
-          description: Name of the token.
-          example: Aave interest bearing WETH
-        symbol:
-          type: string
-          description: Symbol of the token.
-          example: aWETH
-        decimals:
-          type: integer
-          description: Decimal precision of the token.
-          example: 18
-        balanceRaw:
-          type: string
-          description: Raw balance of the token.
-          example: '815273802661604223213'
-        type:
-          type: string
-          enum:
-            - protocol
-            - claimable
-            - underlying
-            - underlying-claimable
-            - fiat
-          example: protocol
-          description: Type of token
-        balance:
-          type: number
-          description: Normalized balance of the token.
-          example: 815.2738026616042
-        iconUrl:
-          type: string
-          format: uri
-          description: URL for the token's icon.
-          example: >-
-            https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png
-        tokens:
-          type: array
-          description: >-
-            Nested array for tokens within other tokens, following the same
-            structure.
-          items:
-            $ref: '#/components/schemas/Token'
-          example: |
-            [
-              {
-                "address": "TheUnitedStatesMint",
-                "name": "USD",
-                "symbol": "USD",
-                "decimals": 18,
-                "type": "fiat",
-                "balanceRaw": "2116601421387500276445819",
-                "balance": "2116601.421387500276445819"
-              }
-            ]
+    TokenBalance:
+      allOf:
+        - $ref: '#/components/schemas/Erc20Metadata'
+        - type: object
+          properties:
+            balanceRaw:
+              type: string
+              description: >-
+                User's balance in raw format (in smallest denomination, e.g.,
+                wei for Ethereum)
+              example: '5000000000000000000'
+          required:
+            - balanceRaw
+    TokenBalanceWithUnderlyings:
+      allOf:
+        - $ref: '#/components/schemas/TokenBalance'
+        - type: object
+          properties:
+            tokens:
+              type: array
+              items:
+                $ref: '#/components/schemas/Underlying'
+              description: List of underlying tokens for the position
+    TokenType:
+      type: string
+      enum:
+        - protocol
+        - claimable
+        - underlying
+        - underlying-claimable
+        - fiat
+      example: protocol
+      description: Type of token
+    Underlying:
+      allOf:
+        - $ref: '#/components/schemas/TokenBalanceWithUnderlyings'
+        - type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/TokenType'
+            priceRaw:
+              type: string
+              description: >-
+                Raw price value of the token in smallest denomination (e.g.,
+                wei)
+              nullable: true
+              example: '1000000000000000000'
       required:
-        - address
-        - name
-        - symbol
-        - decimals
-        - balanceRaw
         - type
-        - balance
-        - iconUrl
+    UnderlyingProfitValues:
+      allOf:
+        - $ref: '#/components/schemas/Erc20Metadata'
+        - type: object
+          properties:
+            profit:
+              type: number
+              description: Profit made in this token for this period
+              example: 1234.56
+            performance:
+              type: number
+              description: Performance percentage for the period
+              example: 8.75
+            calculationData:
+              $ref: '#/components/schemas/CalculationData'
+            apyInfo:
+              $ref: '#/components/schemas/ApyInfo'
+          required:
+            - profit
+            - performance
+            - calculationData
     UpsertCustomerAddressesDto:
       properties:
         address:
@@ -3662,7 +3901,27 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DefiData'
+            allOf:
+              - type: object
+                properties:
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the data was created
+                    example: '2024-01-12T08:25:56.455Z'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the data was last updated
+                    example: '2024-01-12T08:25:56.455Z'
+                  data:
+                    oneOf:
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/DefiPositionResponse'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/DefiProfitsResponse'
     NoContent:
       description: No Content
       content:

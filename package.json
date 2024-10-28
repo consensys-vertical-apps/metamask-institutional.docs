@@ -31,7 +31,7 @@
     "**/*.{md,mdx,ts,js,tsx,jsx,json}": "npm run format"
   },
   "dependencies": {
-    "@codefi/mmi-openapi-arcanum": "^1.24.1",
+    "@codefi/mmi-openapi-arcanum": "^1.26.1",
     "@docusaurus/core": "^3.5.2",
     "@docusaurus/plugin-client-redirects": "^3.5.2",
     "@docusaurus/plugin-google-gtag": "^3.5.2",
