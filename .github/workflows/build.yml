@@ -67,18 +67,13 @@ jobs:
         shell: bash
         run: |
             jf npm ci --audit=false
+            jf npm run build
         env:
           NPM_CLIENT: npm
           NODE_AUTH_TOKEN: ${{ steps.jfrog_token.outputs.oidc-token }}
 
-      # - name: ⬇️ Install
-      #   run: npm ci
-
-      # - name: 🏗️ Build
-      #   run: npm run build
-
-      # - name: Upload build artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: build-artifacts
-      #     path: ./build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./build
