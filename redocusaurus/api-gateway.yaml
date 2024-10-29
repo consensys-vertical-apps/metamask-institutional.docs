@@ -1290,8 +1290,9 @@ components:
     ApyInfo:
       type: object
       description: >-
-        Data structure that contains the calculated APY and various contextual
-        information.
+        Data structure that contains the calculated APY of the position and
+        various contextual information. Is undefined when this type of position
+        is not supported.
       properties:
         apyPercent:
           type: number
@@ -1299,7 +1300,11 @@ components:
           example: 5.25
         apy:
           type: number
-          description: Annual Percentage Yield (APY) as a decimal.
+          description: >-
+            Annual Percentage Yield (APY) as a decimal. Is calculated as `(1 +
+            apr / compounding.frequency) ** compounding.frequency - 1`. For
+            instance assuming a 0.5% interest per month, APY is `(1 + 0.005 /
+            12) ** 12 - 1 = 0.061677812`.
           example: 0.0525
         aprPercent:
           type: number
@@ -1307,10 +1312,14 @@ components:
           example: 5
         apr:
           type: number
-          description: Annual Percentage Rate (APR) as a decimal.
+          description: >-
+            Annual Percentage Rate (APR) as a decimal. Is calculated as
+            `period.interest * compounding.frequency`. For instance assuming a
+            0.5% interest per month, APR is `0.005 * 12 = 0.06`.
           example: 0.05
         period:
           type: object
+          description: Information specific to the compounding period.
           properties:
             blocknumberStart:
               type: integer
@@ -3462,102 +3471,102 @@ components:
             and more. Each category represents a specific type of operation or
             interaction with a specific protocol or service.
           enum:
-            - 0X_V3_EXCHANGE
-            - 1INCH_EXCHANGE
-            - 1INCH_V3_EXCHANGE
-            - AAVE_BORROW
-            - AAVE_DEPOSIT
-            - AAVE_REPAY
-            - AAVE_WITHDRAW
-            - ARBITRUM_BRIDGE_IN
-            - ARBITRUM_BRIDGE_OUT
-            - BALANCER_CLAIM
-            - BALANCER_DEPOSIT
-            - BALANCER_EXCHANGE
-            - BALANCER_WITHDRAW
-            - COMPOUND_CLAIM
-            - COMPOUND_V2_BORROW
-            - COMPOUND_V2_DEPOSIT
-            - COMPOUND_V2_REPAY
-            - COMPOUND_V2_WITHDRAW
-            - DAPPNODE_CLAIM
-            - DEX_AG_EXCHANGE
-            - ENS_CLAIM
-            - ENS_DOMAIN_REGISTER
-            - ENS_DOMAIN_RENEW
-            - ENS_DOMAIN_RESOLVER_SET
-            - ENS_DOMAIN_TRANSFER
-            - ERC_20_APPROVE
-            - ERC_20_MINT
-            - ERC_20_TRANSFER
-            - ERC_721_APPROVE
-            - ERC_721_MINT
-            - ERC_721_TRANSFER
-            - ETHERMINE_MINING_PAYOUT
-            - FUTURESWAP_GOVERNANCE_VOTE
-            - GITCOIN_CLAIM
-            - GNOSIS_SAFE_APPROVE_TX
-            - GNOSIS_SAFE_WITHDRAW
-            - IDEX_DEPOSIT_ETH
-            - IDEX_DEPOSIT_TOKEN
-            - IDEX_WITHDRAW
-            - KYBER_EXCHANGE
-            - METAMASK_V1_BRIDGE_OUT
-            - METAMASK_V1_EXCHANGE
-            - METAMASK_STAKE_V1
-            - MININGPOOLHUB_MINING_PAYOUT
-            - OPENSEA_CANCEL_ORDER
-            - OPENSEA_EXCHANGE
-            - OPENSEA_REGISTER
-            - PARASWAP_V4_EXCHANGE
-            - POLYGON_BRIDGE_IN
-            - POLYGON_BRIDGE_OUT
-            - POOLTOGETHER_CLAIM
-            - POOLTOGETHER_DEPOSIT
-            - POOLTOGETHER_WITHDRAW
-            - SHAPESHIFT_CLAIM
-            - SPARKPOOL_MINING_PAYOUT
-            - SUSHISWAP_DEPOSIT
-            - SUSHISWAP_EXCHANGE
-            - SUSHISWAP_WITHDRAW
-            - TORNADO_CASH_V1_DEPOSIT
-            - TORNADO_CASH_V1_WITHDRAW
-            - TO_0X_EXCHANGE_PROXY
-            - TO_1INCH_V3_EXCHANGE_PROXY
-            - TO_ARBITRUM_INBOX
-            - TO_ARBITRUM_OUTBOX
-            - TO_BALANCER_DISTRIBUTOR
-            - TO_COMPOUND_COMPTROLLER
-            - TO_DAPPNODE_DISTRIBUTOR
-            - TO_ENS_REGISTRAR
-            - TO_ENS_TOKEN_CONTRACT
-            - TO_FOX_DISTRIBUTOR
-            - TO_FUTURESWAP_GOVERNANCE
-            - TO_GITCOIN_DISTRIBUTOR
-            - TO_METAMASK_BRIDGE_V1
-            - TO_METAMASK_STAKE_V1
-            - TO_METAMASK_V1_ROUTER
-            - TO_OPENSEA_REGISTRY
-            - TO_OPENSEA_ROUTER
-            - TO_PARASWAP_V4_EXCHANGE_PROXY
-            - TO_POLYGON_BRIDGE
-            - TO_POOLTOGETHER_DISTRIBUTOR
-            - TO_SUSHISWAP_ROUTER
-            - TO_UNISWAP_DISTRIBUTOR
-            - TO_UNISWAP_V2_ROUTER
-            - TO_UNISWAP_V3_ROUTER
-            - UNISWAP_CLAIM
-            - UNISWAP_V1_DEPOSIT
-            - UNISWAP_V1_EXCHANGE
-            - UNISWAP_V1_WITHDRAW
-            - UNISWAP_V2_DEPOSIT
-            - UNISWAP_V2_EXCHANGE
-            - UNISWAP_V2_WITHDRAW
-            - UNISWAP_V3_DEPOSIT
-            - UNISWAP_V3_EXCHANGE
-            - UNISWAP_V3_WITHDRAW
-            - WETH_UNWRAP
-            - WETH_WRAP
+            - 0x Swap
+            - 1inch Swap
+            - 1inch Swap
+            - Aave Borrow
+            - Aave Deposit
+            - Aave Repay
+            - Aave Withdraw
+            - Arbitrum Bridge
+            - Arbitrum Bridge
+            - Balancer Claim
+            - Balancer Deposit
+            - Balancer Swap
+            - Balancer Withdraw
+            - Compound Claim
+            - Compound Borrow
+            - Compound Deposit
+            - Compound Repay
+            - Compound Withdraw
+            - DappNode Claim
+            - Dex.ag Swap
+            - ENS Claim
+            - ENS Domain Register
+            - ENS Domain Renew
+            - ENS Domain Resolver Set
+            - ENS Domain Transfer
+            - Token Approve
+            - Token Mint
+            - Token Transfer
+            - NFT Approve
+            - NFT Mint
+            - NFT Transfer
+            - Ethermine Mining Payout
+            - FutureSwap Governance Vote
+            - Gitcoin Claim
+            - Gnosis Safe Approve
+            - Gnosis Safe Withdraw
+            - IDEX Deposit
+            - IDEX Deposit
+            - IDEX Withdraw
+            - Kyber Swap
+            - Metamask Bridge
+            - Metamask Swap
+            - Metamask Stake
+            - MiningPoolHub Mining Payout
+            - OpenSea Cancel Order
+            - OpenSea Swap
+            - OpenSea Register
+            - ParaSwap Swap
+            - Polygon Bridge
+            - Polygon Bridge
+            - PoolTogether Claim
+            - PoolTogether Deposit
+            - PoolTogether Withdraw
+            - ShapeShift Claim
+            - SparkPool Mining Payout
+            - SushiSwap Deposit
+            - SushiSwap Swap
+            - SushiSwap Withdraw
+            - TornadoCash Deposit
+            - TornadoCash Withdraw
+            - 0x Swap
+            - 1inch Interaction
+            - Arbitrum Interaction
+            - Arbitrum Interaction
+            - Balancer Interaction
+            - Compound Interaction
+            - DappNode Interaction
+            - ENS Domain Interaction
+            - ENS Domain Interaction
+            - ShapeShift Interaction
+            - FutureSwap Interaction
+            - Gitcoin Interaction
+            - Metamask Bridge
+            - Metamask Stake
+            - Metamask Swap
+            - OpenSea Interaction
+            - OpenSea Interaction
+            - Paraswap Interaction
+            - Polygon Bridge
+            - PoolTogether Interaction
+            - SushiSwap Swap
+            - Uniswap Interaction
+            - Uniswap Swap
+            - Uniswap Swap
+            - Uniswap Claim
+            - Uniswap Deposit
+            - Uniswap Swap
+            - Uniswap Withdraw
+            - Uniswap Deposit
+            - Uniswap Swap
+            - Uniswap Withdraw
+            - Uniswap Deposit
+            - Uniswap Swap
+            - Uniswap Withdraw
+            - WETH Unwrap
+            - WETH Wrap
         userCategory:
           type: string
           example: swap
